@@ -275,7 +275,7 @@ namespace Gevjon
             {
                 var card = (Card)comboBox.SelectedItem;
                 CardComboBox.IsEnabled = true;
-                CardDescBox.Text = card.name + "\n\n" + card.description;
+                CardDescBox.Text = card.id + "\n"+card.name + "\n\n" + card.description;
             }
             else
             {

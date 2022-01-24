@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("Gevjon")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Ryo")]
 [assembly: AssemblyProduct("Gevjon")]
 [assembly: AssemblyCopyright("Copyright ©  2022")]
 [assembly: AssemblyTrademark("")]

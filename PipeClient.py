@@ -19,3 +19,4 @@ finally:
         win32file.CloseHandle(file_handle)
     except:
         pass
+print("done")
