@@ -68,7 +68,12 @@ jobs:
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
-      run: MSBuild.exe /m /p:Configuration=Release /p:Platform=x86
+      
+    - name: Restore the application
+      run: msbuild /t:Restore /p:Configuration=Release /p:Platform=x86
+      
+    - name: Build the application
+      run: MSBuild /m /p:Configuration=Release /p:Platform=x86
       
     - uses: edgarrc/action-7z@v1
       with:
