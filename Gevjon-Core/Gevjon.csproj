@@ -162,6 +162,6 @@
   <PropertyGroup>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)\\DB\\locales" "$(TargetDir)\\locales\\" /S /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(SolutionDir)\DB\locales" "$(TargetDir)\locales\" /S /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>
