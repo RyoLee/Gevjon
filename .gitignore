@@ -4,3 +4,6 @@ obj
 publish
 tmp
 bin
+.vs
+.nuget
+*.csproj.user
