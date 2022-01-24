@@ -6,6 +6,19 @@
 
 上方查询按钮使用ID准确查询,下方查询按钮使用卡名模糊查询,来源仅影响卡名模式(废话)
 
+#### 下载方式
+
+本项目使用Github Actions编译发布,请直接在[gh-pages](https://github.com/RyoLee/Gevjon/blob/gh-pages)分支下载
+
+
+
+- [稳定版](https://github.com/RyoLee/Gevjon/raw/gh-pages/Gevjon.7z)
+- [稳定版-CDN*](https://raw.githubusercontents.com/RyoLee/Gevjon/gh-pages/Gevjon.7z)
+- [开发版](https://github.com/RyoLee/Gevjon/raw/gh-pages/Gevjon-dev.7z)
+- [开发版-CDN*](https://raw.githubusercontents.com/RyoLee/Gevjon/gh-pages/Gevjon-dev.7z)
+
+    **CDN后缀为Cloudflare CDN加速缓存版本,可能会存在更新延迟问题,仅建议国内访问阿妈粽S3服务速度过慢者使用*
+
 #### 第三方调用方式
 
 使用如下命名管道接收控制命令
@@ -38,7 +51,7 @@ mode: 查询模式
 {"id":"","name":"万物创世龙","mode":"name"}
 ```
 
-(主要是懒)
+(主要是懒) 后续大概会再加上一些其他的控制指令如数据源切换
 
 #### 数据更新
 
