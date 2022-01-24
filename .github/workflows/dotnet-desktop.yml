@@ -75,9 +75,8 @@ jobs:
     - name: Build the application
       run: MSBuild /m /p:Configuration=Release /p:Platform=x86
       
-    - uses: edgarrc/action-7z@v1
-      with:
-        args: 7z a -t7z -mx=9 build.7z ./bin/Release/
+    - name: zip
+      run: "C:/Program Files/7-Zip/7z.exe" a -t7z -mx=9 build.7z ./bin/Release/
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
