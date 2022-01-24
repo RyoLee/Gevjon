@@ -17,7 +17,7 @@
 - [开发版](https://github.com/RyoLee/Gevjon/raw/gh-pages/Gevjon-dev.7z)
 - [开发版-CDN*](https://raw.githubusercontents.com/RyoLee/Gevjon/gh-pages/Gevjon-dev.7z)
 
-    **CDN后缀为Cloudflare CDN加速缓存版本,可能会存在更新延迟问题,仅建议国内访问阿妈粽S3服务速度过慢者使用*
+    *CDN后缀为Cloudflare CDN加速缓存版本,可能会存在更新延迟问题,仅建议国内访问阿妈粽S3速度过慢者使用*
 
 #### 第三方调用方式
 
@@ -27,17 +27,17 @@
 ##### 控制命令格式 
 
 ```json
-{"id":"10000","name":"万物创世龙","mode":"name"}
+{"id":"10000","name":"万物创世龙","mode":"name","desc":"测试文本"}
 ```
 
-id: 卡片ID,为YGOPro版本卡片密码
+- mode: 查询模式
+  - id: id搜索模式
+  - name: 卡名搜索模式
+  - issued: 控制器下发模式
+- id: YGOPro版本卡片ID,id搜索模式必填
+- name: 卡名,卡名搜索模式必填,支持简单的模糊搜索,比如英文模式下"C107"可查询到卡片"混沌No.107 超银河眼时空龙"
+- desc: 卡效文本,仅控制器下发模式生效
 
-name:卡名,支持简单的模糊搜索,比如英文模式下"C107"可查询到卡片"混沌No.107 超银河眼时空龙"
-
-mode: 查询模式
-
-- name :卡名搜索模式
-- id(或其他任意值): id搜索模式
 
 可使用项目目录下PipeClient.py进行测试,请注意json需转义
 
@@ -45,13 +45,6 @@ mode: 查询模式
 .\PipeClient.py '{\"id\":\"\",\"name\":\"107\",\"mode\":\"name\"}'
 ```
 
-三个kv均需要,无值或者无意义时传""即可,如
-
-```json
-{"id":"","name":"万物创世龙","mode":"name"}
-```
-
-(主要是懒) 后续大概会再加上一些其他的控制指令如数据源切换
 
 #### 数据更新
 

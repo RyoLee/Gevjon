@@ -32,6 +32,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Web.Script.Serialization;
 using System.Threading.Tasks;
+using System.ComponentModel;
 
 namespace Gevjon
 {
@@ -113,7 +114,7 @@ namespace Gevjon
                     string cid = dataReader["id"].ToString();
                     string cname = dataReader["name"].ToString();
                     string cdesc = dataReader["desc"].ToString();
-                    cards.Add(new Card(cid, srcName==null||"".Equals(srcName.Trim())?"":srcName, cname, cdesc));
+                    cards.Add(new Card(cid, srcName == null || "".Equals(srcName.Trim()) ? "" : srcName, cname, cdesc));
                 }
                 dataReader.Close();
                 return cards;
@@ -178,15 +179,20 @@ namespace Gevjon
             db = new YGOdb();
             InitializeComponent();
             Task task = new Task(() => {
-                while (true) { 
-                    startPipeServer();
+                while (true)
+                {
+                    StartPipeServer();
                 }
             });
             task.Start();
         }
         public delegate void DelegateMessage(string Reply);
 
-        private void startPipeServer()
+        enum MODES
+        {
+            id, name, issued
+        };
+        private void StartPipeServer()
         {
             using (NamedPipeServerStream pipeServer = new NamedPipeServerStream("GevjonCore", PipeDirection.InOut))
             {
@@ -198,7 +204,7 @@ namespace Gevjon
                 {
                     using (System.IO.StreamReader sr = new System.IO.StreamReader(pipeServer))
                     {
-                        string temp="";
+                        string temp = "";
                         string line;
                         while ((line = sr.ReadLine()) != null)
                         {
@@ -210,21 +216,52 @@ namespace Gevjon
                             JavaScriptSerializer serializer = new JavaScriptSerializer();
                             Dictionary<string, object> json = (Dictionary<string, object>)serializer.DeserializeObject(temp);
                             string mode = json["mode"].ToString();
-                            string id = json["id"].ToString();
-                            string name = json["name"].ToString();
-                            if ("name".Equals(mode.ToLower()))
+                            if (Enum.IsDefined(typeof(MODES), mode))
                             {
-                                this.FindByNameButton.Dispatcher.Invoke(new Action(() => {
-                                    CardIdBox.Text = id;
-                                    CardNameBox.Text = name;
-                                    FindByNameButton_Click(null,null); }));
+                                switch ((MODES)Enum.Parse(typeof(MODES), mode, true))
+                                {
+                                    case MODES.id:
+                                        this.FindByIdButton.Dispatcher.Invoke(new Action(() =>
+                                        {
+                                            CardIdBox.Text = json["id"].ToString();
+                                            CardNameBox.Text = "";
+                                            FindByIdButton_Click(null, null);
+                                        }));
+                                        break;
+                                    case MODES.name:
+                                        this.FindByNameButton.Dispatcher.Invoke(new Action(() =>
+                                        {
+                                            CardIdBox.Text = "";
+                                            CardNameBox.Text = json["name"].ToString();
+                                            FindByNameButton_Click(null, null);
+                                        }));
+                                        break;
+                                    case MODES.issued:
+                                        this.SourceComboBox.Dispatcher.Invoke(new Action(() =>
+                                        {
+                                            string id = json["id"].ToString();
+                                            string name = json["name"].ToString();
+                                            string desc = json["desc"].ToString();
+                                            List<Card> cards = new List<Card>() { };
+                                            Card card = new Card(id, "", name, desc);
+                                            cards.Add(card);
+                                            UpdateCardList(cards);
+                                        }));
+                                        break;
+                                    default:
+                                        break;
+
+                                }
+                                /*using (System.IO.StreamWriter sw = new System.IO.StreamWriter(pipeServer))
+                                {
+                                    string msg = "{ \"status\":0}";
+                                    sw.WriteLine(msg);
+                                }
+                                */
                             }
                             else
                             {
-                                this.FindByIdButton.Dispatcher.Invoke(new Action(() => {
-                                    CardIdBox.Text = id;
-                                    CardNameBox.Text = name;
-                                    FindByIdButton_Click(null, null); }));
+                                Console.WriteLine("Received unknown mode: {0}", mode);
                             }
                         }
                         catch (Exception ex)
@@ -275,7 +312,7 @@ namespace Gevjon
             {
                 var card = (Card)comboBox.SelectedItem;
                 CardComboBox.IsEnabled = true;
-                CardDescBox.Text = card.id + "\n"+card.name + "\n\n" + card.description;
+                CardDescBox.Text = "【" + card.name + "】\n\n" + card.description + "\n\n\nID:[" + card.id + "]";
             }
             else
             {
@@ -307,6 +344,22 @@ namespace Gevjon
             {
                 CardComboBox.IsEnabled = false;
             }
+        }
+
+        private void CardIdBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                FindByIdButton_Click(null, null);
+            }
+        }
+
+        private void CardNameBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                FindByNameButton_Click(null, null);
+            }
+
         }
     }
 }
