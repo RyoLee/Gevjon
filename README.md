@@ -8,7 +8,7 @@
 
 #### 下载方式
 
-本项目使用Github Actions编译发布,请直接在[gh-pages](https://github.com/RyoLee/Gevjon/blob/gh-pages)分支下载
+本项目使用Github Actions编译发布,请直接在[gh-pages](https://github.com/RyoLee/Gevjon/tree/gh-pages)分支下载
 
 
 
