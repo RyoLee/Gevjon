@@ -42,7 +42,7 @@
 可使用项目目录下PipeClient.py进行测试,请注意json需转义
 
 ```powershell
-.\PipeClient.py '{\"id\":\"\",\"name\":\"107\",\"mode\":\"name\"}'
+.\PipeClient.py "{\"id\":\"\",\"name\":\"107\",\"mode\":\"name\"}"
 ```
 
 
