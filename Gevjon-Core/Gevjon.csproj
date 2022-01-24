@@ -156,4 +156,10 @@
     <Resource Include="favicon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>rd /s/q $(TargetDir)\\locales"</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(SolutionDir)\\DB\\locales" "$(TargetDir)\\locales\\" /S /Y</PostBuildEvent>
+  </PropertyGroup>
 </Project>
