@@ -50,10 +50,10 @@
             </Grid.ColumnDefinitions>
            
             <TextBlock  Margin="10" Text="ID" FontSize="14" Grid.Row="0" Grid.Column="0"/>
-            <TextBox x:Name="CardIdBox" Margin="10" Grid.Row="0" Grid.Column="1"/>
+            <TextBox x:Name="CardIdBox" Margin="10" KeyDown="CardIdBox_KeyDown" Grid.Row="0" Grid.Column="1"/>
             <Button x:Name="FindByIdButton" Content="查" Click="FindByIdButton_Click" Margin="10" Grid.Row="0" Grid.Column="2"/>
             <TextBlock  Margin="10" Text="卡名" FontSize="14" Grid.Row="1" Grid.Column="0"/>
-            <TextBox x:Name="CardNameBox" Margin="10" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="1"/>
+            <TextBox x:Name="CardNameBox" Margin="10" Grid.Row="1" KeyDown="CardNameBox_KeyDown" Grid.ColumnSpan="2" Grid.Column="1"/>
             <TextBlock  Margin="10" Text="来源" FontSize="14" Grid.Row="2" Grid.Column="0"/>
             <ComboBox x:Name="SourceComboBox" Margin="10" SelectionChanged="SourceComboBox_SelectionChanged" Grid.Row="2" Grid.Column="1">
                 <ComboBoxItem Content="日文"/>
