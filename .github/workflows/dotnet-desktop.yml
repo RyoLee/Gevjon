@@ -40,9 +40,9 @@ name: .NET Core Desktop
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ master ]
   pull_request:
-    branches: [ dev ]
+    branches: [ master ]
 
 jobs:
 
@@ -70,11 +70,11 @@ jobs:
         msbuild /t:Restore /p:Configuration=Release /p:Platform=x86
         msbuild /m /p:Configuration=Release /p:Platform=x86
         cd ./Gevjon-Core/bin/Release
-        7z a Gevjon-dev.7z *
+        7z a Gevjon.7z *
         cd ../../../
         Remove-Item public -Recurse -ErrorAction Ignore
         mkdir public
-        mv ./Gevjon-Core/bin/Release/Gevjon-dev.7z ./public/
+        mv ./Gevjon-Core/bin/Release/Gevjon.7z ./public/
       
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Deploy
