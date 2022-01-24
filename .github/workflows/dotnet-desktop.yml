@@ -69,7 +69,7 @@ jobs:
       run: |
         msbuild /t:Restore /p:Configuration=Release /p:Platform=x86
         msbuild /m /p:Configuration=Release /p:Platform=x86
-        cd ./bin/Release
+        cd ./Gevjon-Core/bin/Release
         7z a Gevjon-dev.7z *
       
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
