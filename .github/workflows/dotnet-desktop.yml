@@ -71,10 +71,15 @@ jobs:
         msbuild /m /p:Configuration=Release /p:Platform=x86
         cd ./Gevjon-Core/bin/Release
         7z a Gevjon-dev.7z *
+        cd ../../../
+        rm -r public
+        mkdir public
+        mv ./Gevjon-Core/bin/Release/Gevjon-dev.7z ./public/
       
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./Gevjon-dev.7z
+        publish_dir: ./public
+        keep_files: true
