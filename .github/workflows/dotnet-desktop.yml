@@ -72,7 +72,7 @@ jobs:
         cd ./Gevjon-Core/bin/Release
         7z a Gevjon-dev.7z *
         cd ../../../
-        rm -r public
+        Remove-Item public -Recurse -ErrorAction Ignore
         mkdir public
         mv ./Gevjon-Core/bin/Release/Gevjon-dev.7z ./public/
       
