@@ -2,7 +2,9 @@ name: .NET Core Desktop
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ master , dev ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
 
@@ -25,10 +27,23 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
       
-    - name: Build
+    - name: Build Master
+      if: github.ref == 'refs/heads/master'
       run: |
-        msbuild /t:Restore /p:Configuration=Release
-        msbuild /m /p:Configuration=Release
+        msbuild /t:Restore /p:Configuration=Release /p:Platform=x86
+        msbuild /m /p:Configuration=Release /p:Platform=x86
+        cd ./Gevjon-Core/bin/Release
+        7z a Gevjon.7z *
+        cd ../../../
+        Remove-Item public -Recurse -ErrorAction Ignore
+        mkdir public
+        mv ./Gevjon-Core/bin/Release/Gevjon.7z ./public/
+              
+    - name: Build Deploy
+      if: github.ref == 'refs/heads/dev'
+      run: |
+        msbuild /t:Restore /p:Configuration=Release /p:Platform=x86
+        msbuild /m /p:Configuration=Release /p:Platform=x86
         cd ./Gevjon-Core/bin/Release
         7z a Gevjon-dev.7z *
         cd ../../../
