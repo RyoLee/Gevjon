@@ -25,14 +25,12 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Data.SQLite;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO.Pipes;
-using System.Linq;
 using System.Web.Script.Serialization;
 using System.Threading.Tasks;
-using System.ComponentModel;
+using System.IO;
 
 namespace Gevjon
 {
@@ -44,53 +42,65 @@ namespace Gevjon
         private YGOdb db;
         class YGOdb
         {
-            static string cnDbFile = "locales\\zh-CN\\cards.cdb";
-            static string enDbFile = "locales\\en-US\\cards.cdb";
-            static string jpDbFile = "locales\\ja-JP\\cards.cdb";
-            static string connectionStringPrefix = "data source = ";
-            public int curSrcIndex = 0;
-            SQLiteConnection tarConn;
-            SQLiteCommand tarCmd;
-            SQLiteConnection srcConn;
-            SQLiteCommand srcCmd;
-            SQLiteConnection cnConn;
-            SQLiteCommand cnCmd;
-            SQLiteConnection enConn;
-            SQLiteCommand enCmd;
-            SQLiteConnection jpConn;
-            SQLiteCommand jpCmd;
+            static string dbFile = "data.json";
+
+            Dictionary<string, string> cnMapper;
+            Dictionary<string, string> enMapper;
+            Dictionary<string, string> jpMapper;
+            Dictionary<string, JsonDataItem> idMapper;
+
+            Dictionary<string, string> srcMapper;
+            public class JsonDataItem
+            {
+                public string en;
+                public string desc;
+                public string ja;
+                public string zh;
+            }
             public YGOdb()
             {
-                cnConn = new SQLiteConnection(connectionStringPrefix + cnDbFile);
-                cnConn.Open();
-                cnCmd = cnConn.CreateCommand();
-                enConn = new SQLiteConnection(connectionStringPrefix + enDbFile);
-                enConn.Open();
-                enCmd = enConn.CreateCommand();
-                jpConn = new SQLiteConnection(connectionStringPrefix + jpDbFile);
-                jpConn.Open();
-                jpCmd = jpConn.CreateCommand();
-                tarConn = cnConn;
-                tarCmd = cnCmd;
-                //use jp by default
-                srcConn = jpConn;
-                srcCmd = jpCmd;
+                cnMapper= new Dictionary<string, string>(); 
+                enMapper= new Dictionary<string, string>();
+                jpMapper= new Dictionary<string, string>();
+                using (StreamReader file = File.OpenText(dbFile))
+                {
+                    string jsonStr = file.ReadToEnd();
+                    JavaScriptSerializer serializer = new JavaScriptSerializer();
+                    serializer.MaxJsonLength =1024 * 1024 * 16;
+                    Dictionary<string, JsonDataItem> json = serializer.Deserialize<Dictionary<string, JsonDataItem>>(jsonStr);
+                    idMapper = new Dictionary<string, JsonDataItem>();
+                    foreach (var item in json)
+                    {
+                        //JsonDataItem jsonDataItem= serializer.Deserialize<JsonDataItem>(item.Value.ToString());
+                        JsonDataItem jsonDataItem = item.Value;
+                        if (jsonDataItem.en != null && !"".Equals(jsonDataItem.en) && !enMapper.ContainsKey(jsonDataItem.en))
+                        {
+                            enMapper.Add(jsonDataItem.en, item.Key);
+                        }
+                        if (jsonDataItem.zh != null && !"".Equals(jsonDataItem.zh) && !cnMapper.ContainsKey(jsonDataItem.zh))
+                        {
+                            cnMapper.Add(jsonDataItem.zh, item.Key);
+                        }
+                        if (jsonDataItem.ja != null && !"".Equals(jsonDataItem.ja) && !jpMapper.ContainsKey(jsonDataItem.ja))
+                        {
+                            jpMapper.Add(jsonDataItem.ja, item.Key);
+                        }
+                        idMapper.Add(item.Key, jsonDataItem);
+                    }
+                }
             }
             public void ResetSrc(int index)
             {
                 switch (index)
                 {
                     case 0:
-                        srcConn = jpConn;
-                        srcCmd = jpCmd;
+                        srcMapper = jpMapper;
                         break;
                     case 1:
-                        srcConn = enConn;
-                        srcCmd = enCmd;
+                        srcMapper = enMapper;
                         break;
                     case 2:
-                        srcConn = cnConn;
-                        srcCmd = cnCmd;
+                        srcMapper = cnMapper;
                         break;
                     default:
                         System.Environment.Exit(1);
@@ -101,22 +111,14 @@ namespace Gevjon
             public List<Card> FindById(string id, string srcName)
             {
                 List<Card> cards = new List<Card>();
-                if (null == id || "".Equals(id.Trim()))
+                if (null == id || "".Equals(id.Trim())||!idMapper.ContainsKey(id))
                 {
                     return cards;
                 }
-                string queryString = "select id,name,desc from texts where id=@cid";
-                tarCmd.CommandText = queryString;
-                tarCmd.Parameters.Add(new SQLiteParameter("@cid", id));
-                SQLiteDataReader dataReader = tarCmd.ExecuteReader();
-                while (dataReader.Read())
-                {
-                    string cid = dataReader["id"].ToString();
-                    string cname = dataReader["name"].ToString();
-                    string cdesc = dataReader["desc"].ToString();
-                    cards.Add(new Card(cid, srcName == null || "".Equals(srcName.Trim()) ? "" : srcName, cname, cdesc));
-                }
-                dataReader.Close();
+                string cid = id;
+                string cname = idMapper[id].zh;
+                string cdesc = idMapper[id].desc;
+                cards.Add(new Card(cid, srcName == null || "".Equals(srcName.Trim()) ? "" : srcName, cname, cdesc));
                 return cards;
 
             }
@@ -127,18 +129,16 @@ namespace Gevjon
                 {
                     return cards;
                 }
-                string queryString = "select id,name from texts where name  like @cname";
-                srcCmd.CommandText = queryString;
-                srcCmd.Parameters.Add(new SQLiteParameter("@cname", '%' + name + '%'));
-                SQLiteDataReader dataReader = srcCmd.ExecuteReader();
                 List<Tuple<string, string>> ids = new List<Tuple<string, string>>();
-                while (dataReader.Read())
+                foreach (var item in srcMapper)
                 {
-                    string cid = dataReader["id"].ToString();
-                    string cname = dataReader["name"].ToString();
-                    ids.Add(new Tuple<string, string>(cid, cname));
+                    if (item.Key.Contains(name))
+                    {
+                        string cid = item.Value;
+                        string cname = item.Key;
+                        ids.Add(new Tuple<string, string>(cid, cname));
+                    }
                 }
-                dataReader.Close();
                 for (int i = 0; i < ids.Count; i++)
                 {
                     List<Card> temp = FindById(ids[i].Item1, ids[i].Item2);
@@ -275,12 +275,6 @@ namespace Gevjon
                     Console.WriteLine("ERROR: {0}", e.Message);
                 }
             }
-        }
-        private static string Reverse(string content)
-        {
-            char[] charArray = content.ToCharArray();
-            Array.Reverse(charArray);
-            return new string(charArray);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
