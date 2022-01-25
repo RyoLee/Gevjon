@@ -361,5 +361,15 @@ namespace Gevjon
             }
 
         }
+
+        private void TopmostCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            Topmost = true;
+        }
+
+        private void TopmostCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Topmost = false;
+        }
     }
 }

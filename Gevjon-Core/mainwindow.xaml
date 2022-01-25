@@ -49,21 +49,21 @@
                 <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
            
-            <TextBlock  Margin="10" Text="ID" FontSize="14" Grid.Row="0" Grid.Column="0"/>
-            <TextBox x:Name="CardIdBox" Margin="10" KeyDown="CardIdBox_KeyDown" Grid.Row="0" Grid.Column="1"/>
-            <Button x:Name="FindByIdButton" Content="查" Click="FindByIdButton_Click" Margin="10" Grid.Row="0" Grid.Column="2"/>
-            <TextBlock  Margin="10" Text="卡名" FontSize="14" Grid.Row="1" Grid.Column="0"/>
-            <TextBox x:Name="CardNameBox" Margin="10" Grid.Row="1" KeyDown="CardNameBox_KeyDown" Grid.ColumnSpan="2" Grid.Column="1"/>
-            <TextBlock  Margin="10" Text="来源" FontSize="14" Grid.Row="2" Grid.Column="0"/>
-            <ComboBox x:Name="SourceComboBox" Margin="10" SelectionChanged="SourceComboBox_SelectionChanged" Grid.Row="2" Grid.Column="1">
+            <TextBlock  Margin="10 5 10 5" Text="ID" FontSize="14" Grid.Row="0" Grid.Column="0"/>
+            <TextBox x:Name="CardIdBox" Margin="10 5 10 5" KeyDown="CardIdBox_KeyDown" Grid.Row="0" Grid.Column="1"/>
+            <Button x:Name="FindByIdButton" Content="查" Click="FindByIdButton_Click" Margin="10 5 10 5" Grid.Row="0" Grid.Column="2"/>
+            <TextBlock  Margin="10 5 10 5" Text="卡名" FontSize="14" Grid.Row="1" Grid.Column="0"/>
+            <Button x:Name="FindByNameButton" Content="查" Click="FindByNameButton_Click" Margin="10 5 10 5" Grid.Row="1" Grid.Column="3"/>
+            <TextBox x:Name="CardNameBox" Margin="10 5 10 5" Grid.Row="1" KeyDown="CardNameBox_KeyDown" Grid.Column="1"/>
+            <TextBlock  Margin="10 5 10 5" Text="来源" FontSize="14" Grid.Row="2" Grid.Column="0"/>
+            <CheckBox x:Name="TopmostCheckBox" Checked="TopmostCheckBox_Checked" Unchecked="TopmostCheckBox_Unchecked" Margin="10 5 10 5" Grid.Row="2" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+            <ComboBox x:Name="SourceComboBox" Margin="10 5 10 5" SelectionChanged="SourceComboBox_SelectionChanged" Grid.Row="2" Grid.Column="1">
                 <ComboBoxItem Content="日文"/>
                 <ComboBoxItem Content="英文"/>
                 <ComboBoxItem Content="中文"/>
             </ComboBox>
-            <Button x:Name="FindByNameButton" Content="查" Click="FindByNameButton_Click" Margin="10" Grid.Row="2" Grid.Column="3"/>
-            <TextBlock  Margin="10" Text="结果" FontSize="14" Grid.Row="3" Grid.Column="0"/>
-            <ComboBox x:Name="CardComboBox" Margin="10" SelectionChanged="CardComboBox_SelectionChanged"  Grid.ColumnSpan="3"  Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" VerticalContentAlignment="Center">
-                
+            <TextBlock  Margin="10 5 10 5" Text="结果" FontSize="14" Grid.Row="3" Grid.Column="0"/>
+            <ComboBox x:Name="CardComboBox" Margin="10 5 10 5" SelectionChanged="CardComboBox_SelectionChanged"  Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" VerticalContentAlignment="Center">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding ItemName}">
@@ -71,7 +71,8 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <TextBox x:Name="CardDescBox" Margin="10"  TextWrapping="WrapWithOverflow" Grid.ColumnSpan="4" Grid.Row="4" Grid.Column="0"/>
+            <TextBlock Text="置顶" VerticalAlignment="Center" FontSize="14" Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center"/>
+            <TextBox x:Name="CardDescBox" Margin="10 5 10 5"  TextWrapping="WrapWithOverflow" Grid.ColumnSpan="4" Grid.Row="4" Grid.Column="0"/>
         </Grid>
     </Grid>
 </Window>
