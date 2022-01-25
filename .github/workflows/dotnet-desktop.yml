@@ -30,8 +30,8 @@ jobs:
     - name: Build Master
       if: github.ref == 'refs/heads/master'
       run: |
-        msbuild /t:Restore /p:Configuration=Release /p:Platform=x86
-        msbuild /m /p:Configuration=Release /p:Platform=x86
+        msbuild /t:Restore /p:Configuration=Release
+        msbuild /m /p:Configuration=Release
         cd ./Gevjon-Core/bin/Release
         7z a Gevjon.7z *
         cd ../../../
@@ -42,8 +42,8 @@ jobs:
     - name: Build Develop
       if: github.ref == 'refs/heads/dev'
       run: |
-        msbuild /t:Restore /p:Configuration=Release /p:Platform=x86
-        msbuild /m /p:Configuration=Release /p:Platform=x86
+        msbuild /t:Restore /p:Configuration=Release
+        msbuild /m /p:Configuration=Release
         cd ./Gevjon-Core/bin/Release
         7z a Gevjon-dev.7z *
         cd ../../../
