@@ -39,7 +39,7 @@ jobs:
         mkdir public
         mv ./Gevjon-Core/bin/Release/Gevjon.7z ./public/
               
-    - name: Build Deploy
+    - name: Build Develop
       if: github.ref == 'refs/heads/dev'
       run: |
         msbuild /t:Restore /p:Configuration=Release /p:Platform=x86
