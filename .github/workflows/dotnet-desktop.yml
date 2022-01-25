@@ -27,8 +27,8 @@ jobs:
       
     - name: Build
       run: |
-        msbuild /t:Restore /p:Configuration=Release /p:Platform=AnyCPU
-        msbuild /m /p:Configuration=Release /p:Platform=AnyCPU
+        msbuild /t:Restore /p:Configuration=Release
+        msbuild /m /p:Configuration=Release
         cd ./Gevjon-Core/bin/Release
         7z a Gevjon-dev.7z *
         cd ../../../
