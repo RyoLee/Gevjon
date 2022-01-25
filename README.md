@@ -24,6 +24,10 @@
 
 #### 控制器
 
+[RyoLee/Gevjon-Observer](https://github.com/RyoLee/Gevjon-Observer)
+
+- PY-MR分支 Python+内存读取实现 基于[MDT](https://github.com/SkywalkerJi/mdt)
+
 #### 第三方调用方式
 
 使用如下命名管道接收控制命令
