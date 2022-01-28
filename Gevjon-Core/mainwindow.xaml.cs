@@ -159,6 +159,7 @@ namespace Gevjon
             public string srcName;
             public string name;
             public string description;
+            public bool isIssued = false;
 
             public Card(string id, string srcName, string name, string description)
             {
@@ -178,13 +179,6 @@ namespace Gevjon
 
             db = new YGOdb();
             InitializeComponent();
-            Task task = new Task(() => {
-                while (true)
-                {
-                    StartPipeServer();
-                }
-            });
-            task.Start();
         }
         public delegate void DelegateMessage(string Reply);
 
@@ -221,29 +215,31 @@ namespace Gevjon
                                 switch ((MODES)Enum.Parse(typeof(MODES), mode, true))
                                 {
                                     case MODES.id:
-                                        this.FindByIdButton.Dispatcher.Invoke(new Action(() =>
+                                        this.ControlGrid.Dispatcher.Invoke(new Action(() =>
                                         {
                                             CardIdBox.Text = json["id"].ToString();
                                             CardNameBox.Text = "";
-                                            FindByIdButton_Click(null, null);
+                                            FindById(null, null);
                                         }));
                                         break;
                                     case MODES.name:
-                                        this.FindByNameButton.Dispatcher.Invoke(new Action(() =>
+                                        this.ControlGrid.Dispatcher.Invoke(new Action(() =>
                                         {
                                             CardIdBox.Text = "";
                                             CardNameBox.Text = json["name"].ToString();
-                                            FindByNameButton_Click(null, null);
+                                            FindByName(null, null);
                                         }));
                                         break;
                                     case MODES.issued:
                                         this.SourceComboBox.Dispatcher.Invoke(new Action(() =>
                                         {
+                                            LightModeCheckBox.IsChecked = true;
                                             string id = json["id"].ToString();
                                             string name = json["name"].ToString();
                                             string desc = json["desc"].ToString();
                                             List<Card> cards = new List<Card>() { };
                                             Card card = new Card(id, "", name, desc);
+                                            card.isIssued = true;
                                             cards.Add(card);
                                             UpdateCardList(cards);
                                         }));
@@ -279,10 +275,24 @@ namespace Gevjon
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            SourceComboBox.SelectedIndex = Int32.Parse(ConfigurationManager.AppSettings["srcDbIndex"] ?? "0");
+            SourceComboBox.SelectedIndex = Int32.Parse(GetSetting("srcDbIndex","0"));
+            OnTopCheckBox.IsChecked = "1".Equals(GetSetting("onTop", "1"));
+            FullInfoCheckBox.IsChecked = "1".Equals(GetSetting("fullInfo", "1"));
+            PipeServerCheckBox.IsChecked = "1".Equals(GetSetting("pipeServer", "0"));
+            LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
+        }
+        private string GetSetting(string key, string defaultValue)
+        {
+            return ConfigurationManager.AppSettings[key] ?? defaultValue;
+        }
+        private void SetSetting(string key, string value)
+        {
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings[key].Value = value;
+            config.Save(ConfigurationSaveMode.Modified);
         }
 
-        private void FindByIdButton_Click(object sender, RoutedEventArgs e)
+        private void FindById(object sender, RoutedEventArgs e)
         {
             CardComboBox.IsEnabled = false;
             CardComboBox.ItemsSource = null;
@@ -290,7 +300,7 @@ namespace Gevjon
             List<Card> cards = db.FindById(CardIdBox.Text, "");
             UpdateCardList(cards);
         }
-        private void FindByNameButton_Click(object sender, RoutedEventArgs e)
+        private void FindByName(object sender, RoutedEventArgs e)
         {
             CardComboBox.IsEnabled = false;
             CardComboBox.ItemsSource = null;
@@ -306,7 +316,14 @@ namespace Gevjon
             {
                 var card = (Card)comboBox.SelectedItem;
                 CardComboBox.IsEnabled = true;
-                CardDescBox.Text = "【" + card.name + "】\n\n" + card.description + "\n\n\nID:[" + card.id + "]";
+                if (FullInfoCheckBox.IsChecked??false && !card.isIssued)
+                {
+                    CardDescBox.Text = "【" + card.name + "】\n\n" + card.description + "\n\n\nID:[" + card.id + "]";
+                }
+                else
+                {
+                    CardDescBox.Text = card.description;
+                }
             }
             else
             {
@@ -320,9 +337,7 @@ namespace Gevjon
             if (comboBox.SelectedItem != null)
             {
                 db.ResetSrc(comboBox.SelectedIndex);
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                config.AppSettings.Settings["srcDbIndex"].Value = comboBox.SelectedIndex.ToString();
-                config.Save(ConfigurationSaveMode.Modified);
+                SetSetting("srcDbIndex", comboBox.SelectedIndex.ToString());
             }
         }
         private void UpdateCardList(List<Card> cards)
@@ -344,26 +359,73 @@ namespace Gevjon
         {
             if (e.Key == System.Windows.Input.Key.Enter)
             {
-                FindByIdButton_Click(null, null);
+                FindById(null, null);
             }
         }
 
         private void CardNameBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {if (e.Key == System.Windows.Input.Key.Enter)
             {
-                FindByNameButton_Click(null, null);
+                FindByName(null, null);
             }
 
         }
 
-        private void TopmostCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void OnTopCheckBox_Checked(object sender, RoutedEventArgs e)
         {
+            SetSetting("onTop", "1");
             Topmost = true;
         }
 
-        private void TopmostCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void OnTopCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
+            SetSetting("onTop", "0");
             Topmost = false;
+        }
+
+        private void PipeServerCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            LightModeCheckBox.IsEnabled = true;
+            Task task = new Task(() => {
+                while (PipeServerCheckBox.IsChecked??false)
+                {
+                    StartPipeServer();
+                }
+            });
+            task.Start();
+            SetSetting("pipeServer", "1");
+        }
+
+        private void PipeServerCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            LightModeCheckBox.IsChecked = false;
+            LightModeCheckBox.IsEnabled = false;
+            SetSetting("pipeServer", "0");
+        }
+
+        private void FullInfoCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            SetSetting("fullInfo", "1");
+        }
+
+        private void FullInfoCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetSetting("fullInfo", "0");
+        }
+
+        private void LightModeCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (PipeServerCheckBox.IsChecked ?? false)
+            {
+                ControlGrid.Visibility = Visibility.Collapsed;
+                SetSetting("lightMode", "1");
+            }
+        }
+
+        private void LightModeCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ControlGrid.Visibility = Visibility.Visible;
+            SetSetting("lightMode", "0");
         }
     }
 }
