@@ -40,10 +40,128 @@ namespace Gevjon
     public partial class MainWindow : Window
     {
         private YGOdb db;
+        private PipeServer pipeServer;
+        class PipeServer
+        {
+            private MainWindow mainWindow;
+            private bool stopFlag = true;
+            public PipeServer(MainWindow mainWindow)
+            {
+                this.mainWindow = mainWindow;
+                Task.Run(() => {
+                    while (true)
+                    {
+                        if (stopFlag)
+                        {
+                            System.Threading.Thread.Sleep(1000);
+                        }
+                        else
+                        {
+                            StartPipeServer();
+                        }
+                    }
+                });
+            }
+            private void StartPipeServer()
+            {
+                using (NamedPipeServerStream pipeServer = new NamedPipeServerStream("GevjonCore", PipeDirection.InOut))
+                {
+                    Console.WriteLine("NamedPipeServer Start.");
+                    Console.Write("Waiting for client connection...");
+                    pipeServer.WaitForConnection();
+                    Console.WriteLine("Client connected.");
+                    try
+                    {
+                        using (System.IO.StreamReader sr = new System.IO.StreamReader(pipeServer))
+                        {
+                            string temp = "";
+                            string line;
+                            while ((line = sr.ReadLine()) != null)
+                            {
+                                temp += line;
+                            }
+                            Console.WriteLine("Received from client: {0}", temp);
+                            try
+                            {
+                                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                                Dictionary<string, object> json = (Dictionary<string, object>)serializer.DeserializeObject(temp);
+                                string mode = json["mode"].ToString();
+                                if (Enum.IsDefined(typeof(MODES), mode))
+                                {
+                                    switch ((MODES)Enum.Parse(typeof(MODES), mode, true))
+                                    {
+                                        case MODES.id:
+                                            mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() =>
+                                            {
+                                                mainWindow.CardIdBox.Text = json["id"].ToString();
+                                                mainWindow.CardNameBox.Text = "";
+                                                mainWindow.FindById(null, null);
+                                            }));
+                                            break;
+                                        case MODES.name:
+                                            mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() =>
+                                            {
+                                                mainWindow.CardIdBox.Text = "";
+                                                mainWindow.CardNameBox.Text = json["name"].ToString();
+                                                mainWindow.FindByName(null, null);
+                                            }));
+                                            break;
+                                        case MODES.issued:
+                                            mainWindow.SourceComboBox.Dispatcher.Invoke(new Action(() =>
+                                            {
+                                                mainWindow.LightModeCheckBox.IsChecked = true;
+                                                string id = json["id"].ToString();
+                                                string name = json["name"].ToString();
+                                                string desc = json["desc"].ToString();
+                                                List<Card> cards = new List<Card>() { };
+                                                Card card = new Card(id, "", name, desc);
+                                                card.isIssued = true;
+                                                cards.Add(card);
+                                                mainWindow.UpdateCardList(cards);
+                                            }));
+                                            break;
+                                        default:
+                                            break;
+
+                                    }
+                                    /*using (System.IO.StreamWriter sw = new System.IO.StreamWriter(pipeServer))
+                                    {
+                                        string msg = "{ \"status\":0}";
+                                        sw.WriteLine(msg);
+                                    }
+                                    */
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Received unknown mode: {0}", mode);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("ERROR: {0}", ex.Message);
+                            }
+                        }
+                    }
+                    catch (System.IO.IOException e)
+                    {
+                        Console.WriteLine("ERROR: {0}", e.Message);
+                    }
+                }
+            }
+
+            internal void Start()
+            {
+                stopFlag = false;
+            }
+
+            internal void Stop()
+            {
+                stopFlag = true;
+            }
+        }
         class YGOdb
         {
             static string dbFile = "data.json";
-
             Dictionary<string, string> cnMapper;
             Dictionary<string, string> enMapper;
             Dictionary<string, string> jpMapper;
@@ -59,14 +177,14 @@ namespace Gevjon
             }
             public YGOdb()
             {
-                cnMapper= new Dictionary<string, string>(); 
-                enMapper= new Dictionary<string, string>();
-                jpMapper= new Dictionary<string, string>();
+                cnMapper = new Dictionary<string, string>();
+                enMapper = new Dictionary<string, string>();
+                jpMapper = new Dictionary<string, string>();
                 using (StreamReader file = File.OpenText(dbFile))
                 {
                     string jsonStr = file.ReadToEnd();
                     JavaScriptSerializer serializer = new JavaScriptSerializer();
-                    serializer.MaxJsonLength =1024 * 1024 * 16;
+                    serializer.MaxJsonLength = 1024 * 1024 * 16;
                     Dictionary<string, JsonDataItem> json = serializer.Deserialize<Dictionary<string, JsonDataItem>>(jsonStr);
                     idMapper = new Dictionary<string, JsonDataItem>();
                     foreach (var item in json)
@@ -111,7 +229,7 @@ namespace Gevjon
             public List<Card> FindById(string id, string srcName)
             {
                 List<Card> cards = new List<Card>();
-                if (null == id || "".Equals(id.Trim())||!idMapper.ContainsKey(id))
+                if (null == id || "".Equals(id.Trim()) || !idMapper.ContainsKey(id))
                 {
                     return cards;
                 }
@@ -186,100 +304,17 @@ namespace Gevjon
         {
             id, name, issued
         };
-        private void StartPipeServer()
-        {
-            using (NamedPipeServerStream pipeServer = new NamedPipeServerStream("GevjonCore", PipeDirection.InOut))
-            {
-                Console.WriteLine("NamedPipeServer Start.");
-                Console.Write("Waiting for client connection...");
-                pipeServer.WaitForConnection();
-                Console.WriteLine("Client connected.");
-                try
-                {
-                    using (System.IO.StreamReader sr = new System.IO.StreamReader(pipeServer))
-                    {
-                        string temp = "";
-                        string line;
-                        while ((line = sr.ReadLine()) != null)
-                        {
-                            temp += line;
-                        }
-                        Console.WriteLine("Received from client: {0}", temp);
-                        try
-                        {
-                            JavaScriptSerializer serializer = new JavaScriptSerializer();
-                            Dictionary<string, object> json = (Dictionary<string, object>)serializer.DeserializeObject(temp);
-                            string mode = json["mode"].ToString();
-                            if (Enum.IsDefined(typeof(MODES), mode))
-                            {
-                                switch ((MODES)Enum.Parse(typeof(MODES), mode, true))
-                                {
-                                    case MODES.id:
-                                        this.ControlGrid.Dispatcher.Invoke(new Action(() =>
-                                        {
-                                            CardIdBox.Text = json["id"].ToString();
-                                            CardNameBox.Text = "";
-                                            FindById(null, null);
-                                        }));
-                                        break;
-                                    case MODES.name:
-                                        this.ControlGrid.Dispatcher.Invoke(new Action(() =>
-                                        {
-                                            CardIdBox.Text = "";
-                                            CardNameBox.Text = json["name"].ToString();
-                                            FindByName(null, null);
-                                        }));
-                                        break;
-                                    case MODES.issued:
-                                        this.SourceComboBox.Dispatcher.Invoke(new Action(() =>
-                                        {
-                                            LightModeCheckBox.IsChecked = true;
-                                            string id = json["id"].ToString();
-                                            string name = json["name"].ToString();
-                                            string desc = json["desc"].ToString();
-                                            List<Card> cards = new List<Card>() { };
-                                            Card card = new Card(id, "", name, desc);
-                                            card.isIssued = true;
-                                            cards.Add(card);
-                                            UpdateCardList(cards);
-                                        }));
-                                        break;
-                                    default:
-                                        break;
-
-                                }
-                                /*using (System.IO.StreamWriter sw = new System.IO.StreamWriter(pipeServer))
-                                {
-                                    string msg = "{ \"status\":0}";
-                                    sw.WriteLine(msg);
-                                }
-                                */
-                            }
-                            else
-                            {
-                                Console.WriteLine("Received unknown mode: {0}", mode);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("ERROR: {0}", ex.Message);
-                        }
-                    }
-                }
-                catch (System.IO.IOException e)
-                {
-                    Console.WriteLine("ERROR: {0}", e.Message);
-                }
-            }
-        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            SourceComboBox.SelectedIndex = Int32.Parse(GetSetting("srcDbIndex","0"));
+            pipeServer = new PipeServer(this);
+            SourceComboBox.SelectedIndex = Int32.Parse(GetSetting("srcDbIndex", "0"));
             OnTopCheckBox.IsChecked = "1".Equals(GetSetting("onTop", "1"));
             FullInfoCheckBox.IsChecked = "1".Equals(GetSetting("fullInfo", "1"));
             PipeServerCheckBox.IsChecked = "1".Equals(GetSetting("pipeServer", "0"));
             LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
+            CardDescBox.FontFamily = new System.Windows.Media.FontFamily(GetSetting("currentFontName", "Microsoft YaHei UI")); 
+            CardDescBox.FontSize = int.Parse(GetSetting("currentFontSize", "14"));
         }
         private string GetSetting(string key, string defaultValue)
         {
@@ -316,7 +351,7 @@ namespace Gevjon
             {
                 var card = (Card)comboBox.SelectedItem;
                 CardComboBox.IsEnabled = true;
-                if (FullInfoCheckBox.IsChecked??false && !card.isIssued)
+                if ((FullInfoCheckBox.IsChecked ?? false) && !card.isIssued)
                 {
                     CardDescBox.Text = "【" + card.name + "】\n\n" + card.description + "\n\n\nID:[" + card.id + "]";
                 }
@@ -364,7 +399,8 @@ namespace Gevjon
         }
 
         private void CardNameBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
             {
                 FindByName(null, null);
             }
@@ -385,19 +421,14 @@ namespace Gevjon
 
         private void PipeServerCheckBox_Checked(object sender, RoutedEventArgs e)
         {
+            pipeServer.Start();
             LightModeCheckBox.IsEnabled = true;
-            Task task = new Task(() => {
-                while (PipeServerCheckBox.IsChecked??false)
-                {
-                    StartPipeServer();
-                }
-            });
-            task.Start();
             SetSetting("pipeServer", "1");
         }
 
         private void PipeServerCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
+            pipeServer.Stop();
             LightModeCheckBox.IsChecked = false;
             LightModeCheckBox.IsEnabled = false;
             SetSetting("pipeServer", "0");
