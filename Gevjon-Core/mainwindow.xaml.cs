@@ -315,6 +315,9 @@ namespace Gevjon
             LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
             CardDescBox.FontFamily = new System.Windows.Media.FontFamily(GetSetting("currentFontName", "Microsoft YaHei UI")); 
             CardDescBox.FontSize = int.Parse(GetSetting("currentFontSize", "14"));
+            this.Opacity = float.Parse(GetSetting("alpha", "0.75"));
+            this.Width = int.Parse(GetSetting("width", "300"));
+            this.Height = int.Parse(GetSetting("height", "600"));
         }
         private string GetSetting(string key, string defaultValue)
         {
@@ -457,6 +460,29 @@ namespace Gevjon
         {
             ControlGrid.Visibility = Visibility.Visible;
             SetSetting("lightMode", "0");
+        }
+        private void window_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                this.DragMove();
+            }
+        }
+
+        private void Window_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Opacity = 1; }));
+           
+        }
+
+        private void Window_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Opacity = float.Parse(GetSetting("alpha", "0.75")); }));
+        }
+
+        private void ExitButton_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
     }
 }
