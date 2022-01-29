@@ -313,7 +313,8 @@ namespace Gevjon
             FullInfoCheckBox.IsChecked = "1".Equals(GetSetting("fullInfo", "1"));
             PipeServerCheckBox.IsChecked = "1".Equals(GetSetting("pipeServer", "0"));
             LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
-
+            CardDescBox.FontFamily = new System.Windows.Media.FontFamily(GetSetting("currentFontName", "Microsoft YaHei UI")); 
+            CardDescBox.FontSize = int.Parse(GetSetting("currentFontSize", "14"));
         }
         private string GetSetting(string key, string defaultValue)
         {
