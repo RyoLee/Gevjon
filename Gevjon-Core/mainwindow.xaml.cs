@@ -95,7 +95,7 @@ namespace Gevjon
                                             {
                                                 mainWindow.CardIdBox.Text = json["id"].ToString();
                                                 mainWindow.CardNameBox.Text = "";
-                                                mainWindow.FindById(null, null);
+                                                mainWindow.FindById();
                                             }));
                                             break;
                                         case MODES.name:
@@ -103,7 +103,7 @@ namespace Gevjon
                                             {
                                                 mainWindow.CardIdBox.Text = "";
                                                 mainWindow.CardNameBox.Text = json["name"].ToString();
-                                                mainWindow.FindByName(null, null);
+                                                mainWindow.FindByName();
                                             }));
                                             break;
                                         case MODES.issued:
@@ -308,16 +308,17 @@ namespace Gevjon
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             pipeServer = new PipeServer(this);
-            SourceComboBox.SelectedIndex = Int32.Parse(GetSetting("srcDbIndex", "0"));
-            OnTopCheckBox.IsChecked = "1".Equals(GetSetting("onTop", "1"));
-            FullInfoCheckBox.IsChecked = "1".Equals(GetSetting("fullInfo", "1"));
-            PipeServerCheckBox.IsChecked = "1".Equals(GetSetting("pipeServer", "0"));
-            LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
-            CardDescBox.FontFamily = new System.Windows.Media.FontFamily(GetSetting("currentFontName", "Microsoft YaHei UI")); 
-            CardDescBox.FontSize = int.Parse(GetSetting("currentFontSize", "14"));
             this.Opacity = float.Parse(GetSetting("alpha", "0.75"));
             this.Width = int.Parse(GetSetting("width", "300"));
             this.Height = int.Parse(GetSetting("height", "600"));
+            CardDescBox.FontFamily = new System.Windows.Media.FontFamily(GetSetting("currentFontName", "Microsoft YaHei UI"));
+            CardDescBox.FontSize = int.Parse(GetSetting("currentFontSize", "14"));
+            SourceComboBox.SelectedIndex = Int32.Parse(GetSetting("srcDbIndex", "0"));
+            FullInfoCheckBox.IsChecked = "1".Equals(GetSetting("fullInfo", "1"));
+            PipeServerCheckBox.IsChecked = "1".Equals(GetSetting("pipeServer", "0"));
+            LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
+            OnTopCheckBox.IsChecked = "1".Equals(GetSetting("onTop", "1"));
+            e.Handled = true;
         }
         private string GetSetting(string key, string defaultValue)
         {
@@ -330,7 +331,7 @@ namespace Gevjon
             config.Save(ConfigurationSaveMode.Modified);
         }
 
-        private void FindById(object sender, RoutedEventArgs e)
+        private void FindById()
         {
             CardComboBox.IsEnabled = false;
             CardComboBox.ItemsSource = null;
@@ -338,7 +339,7 @@ namespace Gevjon
             List<Card> cards = db.FindById(CardIdBox.Text, "");
             UpdateCardList(cards);
         }
-        private void FindByName(object sender, RoutedEventArgs e)
+        private void FindByName()
         {
             CardComboBox.IsEnabled = false;
             CardComboBox.ItemsSource = null;
@@ -368,6 +369,7 @@ namespace Gevjon
                 CardComboBox.IsEnabled = false;
                 CardDescBox.Text = "";
             }
+            e.Handled = true;
         }
         private void SourceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -377,6 +379,7 @@ namespace Gevjon
                 db.ResetSrc(comboBox.SelectedIndex);
                 SetSetting("srcDbIndex", comboBox.SelectedIndex.ToString());
             }
+            e.Handled = true;
         }
         private void UpdateCardList(List<Card> cards)
         {
@@ -397,29 +400,32 @@ namespace Gevjon
         {
             if (e.Key == System.Windows.Input.Key.Enter)
             {
-                FindById(null, null);
+                FindById();
             }
+            e.Handled = true;
         }
 
         private void CardNameBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == System.Windows.Input.Key.Enter)
             {
-                FindByName(null, null);
+                FindByName();
             }
-
+            e.Handled = true;
         }
 
         private void OnTopCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             SetSetting("onTop", "1");
             Topmost = true;
+            e.Handled = true;
         }
 
         private void OnTopCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             SetSetting("onTop", "0");
             Topmost = false;
+            e.Handled = true;
         }
 
         private void PipeServerCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -427,6 +433,7 @@ namespace Gevjon
             pipeServer.Start();
             LightModeCheckBox.IsEnabled = true;
             SetSetting("pipeServer", "1");
+            e.Handled = true;
         }
 
         private void PipeServerCheckBox_Unchecked(object sender, RoutedEventArgs e)
@@ -435,16 +442,19 @@ namespace Gevjon
             LightModeCheckBox.IsChecked = false;
             LightModeCheckBox.IsEnabled = false;
             SetSetting("pipeServer", "0");
+            e.Handled = true;
         }
 
         private void FullInfoCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             SetSetting("fullInfo", "1");
+            e.Handled = true;
         }
 
         private void FullInfoCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             SetSetting("fullInfo", "0");
+            e.Handled = true;
         }
 
         private void LightModeCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -454,35 +464,42 @@ namespace Gevjon
                 ControlGrid.Visibility = Visibility.Collapsed;
                 SetSetting("lightMode", "1");
             }
+            e.Handled = true;
         }
 
         private void LightModeCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             ControlGrid.Visibility = Visibility.Visible;
             SetSetting("lightMode", "0");
-        }
-        private void window_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
-            {
-                this.DragMove();
-            }
+            e.Handled = true;
         }
 
         private void Window_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Opacity = 1; }));
-           
+            e.Handled = true;
+
         }
 
         private void Window_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Opacity = float.Parse(GetSetting("alpha", "0.75")); }));
+            e.Handled = true;
         }
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
+            e.Handled = true;
+        }
+
+        private void MoveButton_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            {
+                this.DragMove();
+            }
+            e.Handled = true;
         }
     }
 }
