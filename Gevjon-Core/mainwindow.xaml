@@ -33,7 +33,6 @@
         AllowsTransparency="True"
         WindowStyle="None"
         WindowState="Normal"
-        MouseMove="window_MouseMove"
         MouseEnter="Window_MouseEnter"
         MouseLeave="Window_MouseLeave"
         Loaded="Window_Loaded">
@@ -52,23 +51,25 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="30"/>
             </Grid.ColumnDefinitions>
-            <CheckBox x:Name="OnTopCheckBox" Content="置顶" ToolTip="窗口始终显示在最上层"  Checked="OnTopCheckBox_Checked" Unchecked="OnTopCheckBox_Unchecked" Grid.Column="0" Margin="5" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
-            <CheckBox x:Name="FullInfoCheckBox" Content="详细" ToolTip="显示卡名/id等信息,服务开启并收到纯下发模式数据时无效" Checked="FullInfoCheckBox_Checked" Unchecked="FullInfoCheckBox_Unchecked" Margin="5" Grid.Column="1" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
-            <CheckBox x:Name="PipeServerCheckBox" Content="服务" ToolTip="监听服务,开启后接受其他联动工具控制显示内容"  Checked="PipeServerCheckBox_Checked" Unchecked="PipeServerCheckBox_Unchecked" Margin="5" Grid.Column="2" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
-            <CheckBox x:Name="LightModeCheckBox" Content="轻量" IsEnabled="False" ToolTip="纯显示模式,简化UI,仅服务模式有效"  Checked="LightModeCheckBox_Checked" Unchecked="LightModeCheckBox_Unchecked" Margin="5" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
-
-            <Button x:Name="ExitButton" Content="X" Margin="5" Grid.Column="4" Click="ExitButton_Click"/>
+            <Button x:Name="MoveButton" Content="⦻" ToolTip="移动窗口" Margin="5" Grid.Column="0" PreviewMouseDown="MoveButton_MouseDown"/>
+            <CheckBox x:Name="OnTopCheckBox" Content="置顶" ToolTip="窗口始终显示在最上层"  Checked="OnTopCheckBox_Checked" Unchecked="OnTopCheckBox_Unchecked" Grid.Column="1" Margin="5" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+            <CheckBox x:Name="FullInfoCheckBox" Content="详细" ToolTip="显示卡名/id等信息,服务开启并收到纯下发模式数据时无效" Checked="FullInfoCheckBox_Checked" Unchecked="FullInfoCheckBox_Unchecked" Margin="5" Grid.Column="2" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+            <CheckBox x:Name="PipeServerCheckBox" Content="服务" ToolTip="监听服务,开启后接受其他联动工具控制显示内容"  Checked="PipeServerCheckBox_Checked" Unchecked="PipeServerCheckBox_Unchecked" Margin="5" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+            <CheckBox x:Name="LightModeCheckBox" Content="轻量" IsEnabled="False" ToolTip="纯显示模式,简化UI,仅服务模式有效"  Checked="LightModeCheckBox_Checked" Unchecked="LightModeCheckBox_Unchecked" Margin="5" Grid.Column="4" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+            <Button x:Name="ExitButton" Content="X" ToolTip="退出" Margin="5" Grid.Column="5" Click="ExitButton_Click"/>
             <Border Grid.Column="0" BorderBrush="#c9c9c9" BorderThickness="1" />
             <Border Grid.Column="1" BorderBrush="#c9c9c9" BorderThickness="1" />
             <Border Grid.Column="2" BorderBrush="#c9c9c9" BorderThickness="1" />
             <Border Grid.Column="3" BorderBrush="#c9c9c9" BorderThickness="1" />
             <Border Grid.Column="4" BorderBrush="#c9c9c9" BorderThickness="1" />
+            <Border Grid.Column="5" BorderBrush="#c9c9c9" BorderThickness="1" />
         </Grid>
         <!-- Search Grid-->
         <Grid x:Name="ControlGrid"  Grid.Row="1">
