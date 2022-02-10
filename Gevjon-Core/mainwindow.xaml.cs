@@ -418,8 +418,8 @@ namespace Gevjon
             if (e.Key == System.Windows.Input.Key.Enter)
             {
                 FindById();
+                e.Handled = true;
             }
-            e.Handled = true;
         }
 
         private void CardNameBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -427,8 +427,8 @@ namespace Gevjon
             if (e.Key == System.Windows.Input.Key.Enter)
             {
                 FindByName();
+                e.Handled = true;
             }
-            e.Handled = true;
         }
 
         private void OnTopCheckBox_Checked(object sender, RoutedEventArgs e)
