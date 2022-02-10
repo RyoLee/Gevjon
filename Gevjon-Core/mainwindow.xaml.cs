@@ -319,7 +319,12 @@ namespace Gevjon
             PipeServerCheckBox.IsChecked = "1".Equals(GetSetting("pipeServer", "0"));
             LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
             OnTopCheckBox.IsChecked = "1".Equals(GetSetting("onTop", "1"));
-            Topmost = OnTopCheckBox.IsChecked??false;
+            if (OnTopCheckBox.IsChecked ?? false) {
+                Activate();
+                Topmost = false;
+                Topmost = true;
+                Focus();
+            }
             e.Handled = true;
         }
         private void InitBackground()
