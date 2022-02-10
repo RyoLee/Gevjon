@@ -307,10 +307,11 @@ namespace Gevjon
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            InitBackground();
             pipeServer = new PipeServer(this);
-            this.Opacity = float.Parse(GetSetting("alpha", "0.75"));
-            this.Width = int.Parse(GetSetting("width", "300"));
-            this.Height = int.Parse(GetSetting("height", "600"));
+            Background.Opacity = float.Parse(GetSetting("alpha", "0.75"));
+            Width = int.Parse(GetSetting("width", "300"));
+            Height = int.Parse(GetSetting("height", "600"));
             CardDescBox.FontFamily = new System.Windows.Media.FontFamily(GetSetting("currentFontName", "Microsoft YaHei UI"));
             CardDescBox.FontSize = int.Parse(GetSetting("currentFontSize", "14"));
             SourceComboBox.SelectedIndex = Int32.Parse(GetSetting("srcDbIndex", "0"));
@@ -318,7 +319,23 @@ namespace Gevjon
             PipeServerCheckBox.IsChecked = "1".Equals(GetSetting("pipeServer", "0"));
             LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
             OnTopCheckBox.IsChecked = "1".Equals(GetSetting("onTop", "1"));
+            Topmost = OnTopCheckBox.IsChecked??false;
             e.Handled = true;
+        }
+        private void InitBackground()
+        {
+            Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 255, 255));
+            MoveButton.Background = Background;
+            OnTopCheckBox.Background = Background;
+            FullInfoCheckBox.Background = Background;
+            PipeServerCheckBox.Background = Background;
+            LightModeCheckBox.Background = Background;
+            ExitButton.Background= Background;
+            CardIdBox.Background = Background;
+            CardNameBox.Background = Background;
+            SourceComboBox.Background = Background;
+            CardComboBox.Background = Background;
+            CardDescBox.Background = Background;
         }
         private string GetSetting(string key, string defaultValue)
         {
@@ -417,6 +434,7 @@ namespace Gevjon
         private void OnTopCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             SetSetting("onTop", "1");
+            Topmost = false;
             Topmost = true;
             e.Handled = true;
         }
@@ -476,14 +494,14 @@ namespace Gevjon
 
         private void Window_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Opacity = 1; }));
+            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Background.Opacity = 1; }));
             e.Handled = true;
 
         }
 
         private void Window_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Opacity = float.Parse(GetSetting("alpha", "0.75")); }));
+            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Background.Opacity = float.Parse(GetSetting("alpha", "0.75")); }));
             e.Handled = true;
         }
 
