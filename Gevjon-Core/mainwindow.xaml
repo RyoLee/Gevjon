@@ -58,7 +58,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="30"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="MoveButton" Content="⦻" ToolTip="移动窗口" Margin="5" Grid.Column="0" PreviewMouseDown="MoveButton_MouseDown"/>
+            <Button x:Name="MoveButton" Content="⦻" ToolTip="左键移动窗口,右键切换收起/展开" Margin="5" Grid.Column="0" PreviewMouseRightButtonDown="MoveButton_RightMouseDown" PreviewMouseLeftButtonDown="MoveButton_LeftMouseDown"/>
             <CheckBox x:Name="OnTopCheckBox" Content="置顶" ToolTip="窗口始终显示在最上层"  Checked="OnTopCheckBox_Checked" Unchecked="OnTopCheckBox_Unchecked" Grid.Column="1" Margin="5" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
             <CheckBox x:Name="FullInfoCheckBox" Content="详细" ToolTip="显示卡名/id等信息,服务开启并收到纯下发模式数据时无效" Checked="FullInfoCheckBox_Checked" Unchecked="FullInfoCheckBox_Unchecked" Margin="5" Grid.Column="2" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
             <CheckBox x:Name="PipeServerCheckBox" Content="服务" ToolTip="监听服务,开启后接受其他联动工具控制显示内容"  Checked="PipeServerCheckBox_Checked" Unchecked="PipeServerCheckBox_Unchecked" Margin="5" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center"/>

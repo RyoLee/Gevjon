@@ -1,10 +1,16 @@
 # Gevjon
 
 ## Core
+
 本项目为Gevjon项目组件core组件,仅提供卡查功能
+
 #### 界面操作
 
-上方查询按钮使用ID准确查询,下方查询按钮使用卡名模糊查询,来源仅影响卡名模式(废话)
+查询框输入查询内容后回车进行查询
+
+- ID查询为准确查询
+- 卡名查询为模糊查询
+- 来源设置仅影响卡名模式
 
 #### 下载方式
 
@@ -18,6 +24,10 @@
 - [开发版-CDN*](https://raw.githubusercontents.com/RyoLee/Gevjon/gh-pages/Gevjon-dev.7z)
 
     *CDN后缀为Cloudflare CDN加速缓存版本,可能会存在更新延迟问题,仅建议国内访问阿妈粽S3速度过慢者使用*
+
+#### 控制器
+
+[Gevjon-Observer](https://github.com/RyoLee/Gevjon-Observer)
 
 #### 第三方调用方式
 

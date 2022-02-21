@@ -516,13 +516,31 @@ namespace Gevjon
             e.Handled = true;
         }
 
-        private void MoveButton_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void MoveButton_LeftMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
             {
                 this.DragMove();
+                e.Handled = true;
             }
-            e.Handled = true;
+        }
+
+        private void MoveButton_RightMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Right)
+            {
+                if (Width != 30)
+                {
+                    Width = 30;
+                    Height = 30;
+                }
+                else
+                {
+                    Width = int.Parse(GetSetting("width", "300"));
+                    Height = int.Parse(GetSetting("height", "600"));
+                }
+                e.Handled = true;
+            }
         }
     }
 }
