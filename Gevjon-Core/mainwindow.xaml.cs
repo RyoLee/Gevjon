@@ -107,14 +107,14 @@ namespace Gevjon
                                             }));
                                             break;
                                         case MODES.issued:
-                                            mainWindow.SourceComboBox.Dispatcher.Invoke(new Action(() =>
+                                            mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() =>
                                             {
                                                 mainWindow.LightModeCheckBox.IsChecked = true;
                                                 string id = json["id"].ToString();
                                                 string name = json["name"].ToString();
                                                 string desc = json["desc"].ToString();
                                                 List<Card> cards = new List<Card>() { };
-                                                Card card = new Card(id, "", name, desc);
+                                                Card card = new Card(id, name, desc);
                                                 card.isIssued = true;
                                                 cards.Add(card);
                                                 mainWindow.UpdateCardList(cards);
@@ -159,15 +159,12 @@ namespace Gevjon
                 stopFlag = true;
             }
         }
-        class YGOdb
+        public class YGOdb
         {
             static string dbFile = "data.json";
-            Dictionary<string, string> cnMapper;
-            Dictionary<string, string> enMapper;
-            Dictionary<string, string> jpMapper;
-            Dictionary<string, JsonDataItem> idMapper;
+            Dictionary<string, JsonDataItem> ids;
 
-            Dictionary<string, string> srcMapper;
+            Dictionary<string, string> names;
             public class JsonDataItem
             {
                 public string en;
@@ -177,66 +174,42 @@ namespace Gevjon
             }
             public YGOdb()
             {
-                cnMapper = new Dictionary<string, string>();
-                enMapper = new Dictionary<string, string>();
-                jpMapper = new Dictionary<string, string>();
+                names = new Dictionary<string, string>();
                 using (StreamReader file = File.OpenText(dbFile))
                 {
                     string jsonStr = file.ReadToEnd();
                     JavaScriptSerializer serializer = new JavaScriptSerializer();
                     serializer.MaxJsonLength = 1024 * 1024 * 16;
                     Dictionary<string, JsonDataItem> json = serializer.Deserialize<Dictionary<string, JsonDataItem>>(jsonStr);
-                    idMapper = new Dictionary<string, JsonDataItem>();
+                    ids = new Dictionary<string, JsonDataItem>();
                     foreach (var item in json)
                     {
                         //JsonDataItem jsonDataItem= serializer.Deserialize<JsonDataItem>(item.Value.ToString());
                         JsonDataItem jsonDataItem = item.Value;
-                        if (jsonDataItem.en != null && !"".Equals(jsonDataItem.en) && !enMapper.ContainsKey(jsonDataItem.en))
+                        if (jsonDataItem.en != null && !"".Equals(jsonDataItem.en) && !names.ContainsKey(jsonDataItem.en))
                         {
-                            enMapper.Add(jsonDataItem.en, item.Key);
+                            names.Add(jsonDataItem.en, item.Key);
                         }
-                        if (jsonDataItem.zh != null && !"".Equals(jsonDataItem.zh) && !cnMapper.ContainsKey(jsonDataItem.zh))
+                        if (jsonDataItem.zh != null && !"".Equals(jsonDataItem.zh) && !names.ContainsKey(jsonDataItem.zh))
                         {
-                            cnMapper.Add(jsonDataItem.zh, item.Key);
+                            names.Add(jsonDataItem.zh, item.Key);
                         }
-                        if (jsonDataItem.ja != null && !"".Equals(jsonDataItem.ja) && !jpMapper.ContainsKey(jsonDataItem.ja))
+                        if (jsonDataItem.ja != null && !"".Equals(jsonDataItem.ja) && !names.ContainsKey(jsonDataItem.ja))
                         {
-                            jpMapper.Add(jsonDataItem.ja, item.Key);
+                            names.Add(jsonDataItem.ja, item.Key);
                         }
-                        idMapper.Add(item.Key, jsonDataItem);
+                        ids.Add(item.Key, jsonDataItem);
                     }
                 }
-            }
-            public void ResetSrc(int index)
-            {
-                switch (index)
-                {
-                    case 0:
-                        srcMapper = jpMapper;
-                        break;
-                    case 1:
-                        srcMapper = enMapper;
-                        break;
-                    case 2:
-                        srcMapper = cnMapper;
-                        break;
-                    default:
-                        System.Environment.Exit(1);
-                        break;
-                }
-
             }
             public List<Card> FindById(string id, string srcName)
             {
                 List<Card> cards = new List<Card>();
-                if (null == id || "".Equals(id.Trim()) || !idMapper.ContainsKey(id))
+                if (null == id || "".Equals(id.Trim()) || !ids.ContainsKey(id))
                 {
                     return cards;
                 }
-                string cid = id;
-                string cname = idMapper[id].zh;
-                string cdesc = idMapper[id].desc;
-                cards.Add(new Card(cid, srcName == null || "".Equals(srcName.Trim()) ? "" : srcName, cname, cdesc));
+                cards.Add(new Card(id, srcName == null || "".Equals(srcName.Trim()) ? "" : srcName, ids[id]));
                 return cards;
 
             }
@@ -247,19 +220,19 @@ namespace Gevjon
                 {
                     return cards;
                 }
-                List<Tuple<string, string>> ids = new List<Tuple<string, string>>();
-                foreach (var item in srcMapper)
+                Dictionary<string, string> tIds = new Dictionary<string, string>(); 
+                foreach (var item in names)
                 {
-                    if (item.Key.Contains(name))
+                    if (!tIds.ContainsKey(item.Value) && item.Key.Contains(name))
                     {
                         string cid = item.Value;
                         string cname = item.Key;
-                        ids.Add(new Tuple<string, string>(cid, cname));
+                        tIds.Add(cid, cname);
                     }
                 }
-                for (int i = 0; i < ids.Count; i++)
+                foreach (var key in tIds.Keys)
                 {
-                    List<Card> temp = FindById(ids[i].Item1, ids[i].Item2);
+                    List<Card> temp = FindById(key, tIds[key]);
                     if (temp.Count != 0)
                     {
                         for (int j = 0; j < temp.Count; j++)
@@ -271,24 +244,46 @@ namespace Gevjon
                 return cards;
             }
         }
-        class Card
+        public class Card
         {
             public string id;
-            public string srcName;
-            public string name;
-            public string description;
+            public string src;
+            public string en;
+            public string ja;
+            public string zh;
+            public string desc;
             public bool isIssued = false;
-
-            public Card(string id, string srcName, string name, string description)
+            public Card(string id, string src, string desc)
             {
                 this.id = id;
-                this.srcName = srcName;
-                this.name = name;
-                this.description = description;
+                this.src = src;
+                this.desc = desc;
+                this.isIssued = true;
+            }
+            public Card(string id, string src, YGOdb.JsonDataItem data)
+            {
+                this.id = id;
+                this.src = src;
+                this.en = data.en;
+                this.ja = data.ja;
+                this.zh = data.zh;
+                this.desc = data.desc;
             }
             public string ItemName
             {
-                get { return srcName == null || "".Equals(srcName.Trim()) ? name : srcName; }
+                get { return isEmpty(src) ? zh : src; }
+            }
+            public override string ToString()
+            {
+                return isIssued ? desc : isEmpty(en) ? "" : reformat(en) + reformat(ja) + reformat(zh) + "\n" + desc;
+            }
+            private string reformat(string str)
+            {
+                return isEmpty(str) ? "" : "【" + str + "】" + "\n";
+            }
+            private bool isEmpty(string str)
+            {
+                return (str == null || "".Equals(str.Trim()));
             }
         }
 
@@ -314,12 +309,11 @@ namespace Gevjon
             Height = int.Parse(GetSetting("height", "600"));
             CardDescBox.FontFamily = new System.Windows.Media.FontFamily(GetSetting("currentFontName", "Microsoft YaHei UI"));
             CardDescBox.FontSize = int.Parse(GetSetting("currentFontSize", "14"));
-            SourceComboBox.SelectedIndex = Int32.Parse(GetSetting("srcDbIndex", "0"));
-            FullInfoCheckBox.IsChecked = "1".Equals(GetSetting("fullInfo", "1"));
             PipeServerCheckBox.IsChecked = "1".Equals(GetSetting("pipeServer", "0"));
             LightModeCheckBox.IsChecked = "1".Equals(GetSetting("lightMode", "0"));
             OnTopCheckBox.IsChecked = "1".Equals(GetSetting("onTop", "1"));
-            if (OnTopCheckBox.IsChecked ?? false) {
+            if (OnTopCheckBox.IsChecked ?? false)
+            {
                 Activate();
                 Topmost = false;
                 Topmost = true;
@@ -332,13 +326,12 @@ namespace Gevjon
             Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 255, 255));
             MoveButton.Background = Background;
             OnTopCheckBox.Background = Background;
-            FullInfoCheckBox.Background = Background;
             PipeServerCheckBox.Background = Background;
             LightModeCheckBox.Background = Background;
-            ExitButton.Background= Background;
+            ExitButton.Background = Background;
             CardIdBox.Background = Background;
             CardNameBox.Background = Background;
-            SourceComboBox.Background = Background;
+            SettingButton.Background = Background;
             CardComboBox.Background = Background;
             CardDescBox.Background = Background;
         }
@@ -377,14 +370,7 @@ namespace Gevjon
             {
                 var card = (Card)comboBox.SelectedItem;
                 CardComboBox.IsEnabled = true;
-                if ((FullInfoCheckBox.IsChecked ?? false) && !card.isIssued)
-                {
-                    CardDescBox.Text = "【" + card.name + "】\n\n" + card.description + "\n\n\nID:[" + card.id + "]";
-                }
-                else
-                {
-                    CardDescBox.Text = card.description;
-                }
+                CardDescBox.Text = card.ToString();
             }
             else
             {
@@ -393,16 +379,7 @@ namespace Gevjon
             }
             e.Handled = true;
         }
-        private void SourceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ComboBox comboBox = (ComboBox)sender;
-            if (comboBox.SelectedItem != null)
-            {
-                db.ResetSrc(comboBox.SelectedIndex);
-                SetSetting("srcDbIndex", comboBox.SelectedIndex.ToString());
-            }
-            e.Handled = true;
-        }
+
         private void UpdateCardList(List<Card> cards)
         {
             if (cards != null && cards.Count != 0)
@@ -465,18 +442,6 @@ namespace Gevjon
             LightModeCheckBox.IsChecked = false;
             LightModeCheckBox.IsEnabled = false;
             SetSetting("pipeServer", "0");
-            e.Handled = true;
-        }
-
-        private void FullInfoCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            SetSetting("fullInfo", "1");
-            e.Handled = true;
-        }
-
-        private void FullInfoCheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            SetSetting("fullInfo", "0");
             e.Handled = true;
         }
 
