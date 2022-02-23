@@ -1,5 +1,11 @@
 # Gevjon
 
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RyoLee/Gevjon?include_prereleases&style=flat-square)
+![GitHub all releases](https://img.shields.io/github/downloads/RyoLee/Gevjon/total?style=flat-square)
+![GitHub](https://img.shields.io/github/license/RyoLee/Gevjon?style=flat-square)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/.NET%20Core%20Desktop/master?label=Master&style=flat-square)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/.NET%20Core%20Desktop/dev?label=Dev&style=flat-square)
+
 ## Core
 
 本项目为Gevjon项目组件core组件,仅提供卡查功能
