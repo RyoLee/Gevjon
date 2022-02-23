@@ -21,5 +21,5 @@ for _type in types:
         _data[_type[0:2]]=name
         _data["desc"]=desc
 with open('data.json', 'w', encoding='utf-8') as f:
-    json.dump(data, f, ensure_ascii=False, indent=4)
+    json.dump(data, f, ensure_ascii=False, sort_keys=True, indent=4)
 os.system("pause")
