@@ -271,7 +271,7 @@ namespace Gevjon
             }
             public string ItemName
             {
-                get { return isEmpty(src) ? zh : src; }
+                get { return isEmpty(src) ? isEmpty(zh) ? isEmpty(ja) ? en : ja : zh : src; }
             }
             public override string ToString()
             {
