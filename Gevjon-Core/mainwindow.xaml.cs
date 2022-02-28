@@ -303,6 +303,7 @@ namespace Gevjon
         {
             InitBackground();
             pipeServer = new PipeServer(this);
+            UpdateCheckBox.IsChecked = "1".Equals(GetSetting("autoUpdate", "1"));
             Background.Opacity = float.Parse(GetSetting("alpha", "0.75"));
             Width = int.Parse(GetSetting("width", "300"));
             Height = int.Parse(GetSetting("height", "600"));
@@ -330,7 +331,7 @@ namespace Gevjon
             ExitButton.Background = Background;
             CardIdBox.Background = Background;
             CardNameBox.Background = Background;
-            SettingButton.Background = Background;
+            UpdateCheckBox.Background = Background;
             CardComboBox.Background = Background;
             CardDescBox.Background = Background;
         }
@@ -504,6 +505,58 @@ namespace Gevjon
                     Height = int.Parse(GetSetting("height", "600"));
                 }
                 e.Handled = true;
+            }
+        }
+
+        private void UpdateCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            SetSetting("autoUpdate", "1");
+            CheckUpdate();
+            e.Handled = true;
+        }
+
+        private void UpdateCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetSetting("autoUpdate", "0");
+            e.Handled = true;
+        }
+        private async Task CheckUpdate()
+        {
+            if (System.Threading.Monitor.TryEnter(UpdateCheckBox)) {
+                try
+                {
+                    string HITS_URL = "https://hits.dwyl.com/RyoLee/Gevjon.svg";
+                    string VER_URL = GetSetting("verURL", "https://cdn.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/version.txt");
+                    string REL_URL = GetSetting("dlURL", "https://cdn.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z");
+                    string remote_ver_str = await TryGetAsync(VER_URL);
+                    string locale_ver_str;
+                    using (StreamReader reader = new StreamReader("version.txt")) {
+                        locale_ver_str = reader.ReadLine() ?? "";
+                    }
+                    var remote_ver = new Version(remote_ver_str);
+                    var locale_ver = new Version(locale_ver_str);
+                    if (remote_ver.CompareTo(locale_ver)==1) {
+                        if (MessageBox.Show("本地:\t" + locale_ver_str + "\n远端:\t" + remote_ver_str + "\n是否更新?", "发现新版本", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes) {
+                            await TryGetAsync(HITS_URL);
+                            System.Diagnostics.Process.Start(REL_URL);
+                        }
+                    }
+                }
+                finally {
+                    System.Threading.Monitor.Exit(UpdateCheckBox);
+                }
+            }
+        }
+        private async Task<String> TryGetAsync(string url)
+        {
+            using (System.Net.Http.HttpClient client = new System.Net.Http.HttpClient())
+            {
+                System.Net.Http.HttpResponseMessage response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
+                return default;
             }
         }
     }
