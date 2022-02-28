@@ -52,15 +52,15 @@
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="30"/>
-                <ColumnDefinition Width="30"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="30"/>
             </Grid.ColumnDefinitions>
             <Button x:Name="MoveButton" Content="⦻" ToolTip="左键移动窗口,右键切换收起/展开" Margin="5" Grid.Column="0" PreviewMouseRightButtonDown="MoveButton_RightMouseDown" PreviewMouseLeftButtonDown="MoveButton_LeftMouseDown"/>
-            <Button x:Name="SettingButton"  Content="S" ToolTip="设置(暂未启用)" Margin="5" Grid.Column="1" />
-            <CheckBox x:Name="OnTopCheckBox" Content="置顶" ToolTip="窗口始终显示在最上层"  Checked="OnTopCheckBox_Checked" Unchecked="OnTopCheckBox_Unchecked" Grid.Column="2" Margin="5" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+            <CheckBox x:Name="OnTopCheckBox" Content="置顶" ToolTip="窗口始终显示在最上层"  Checked="OnTopCheckBox_Checked" Unchecked="OnTopCheckBox_Unchecked" Grid.Column="1" Margin="5" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+            <CheckBox x:Name="UpdateCheckBox"  Content="更新" ToolTip="启动时检查更新" Checked="UpdateCheckBox_Checked" Unchecked="UpdateCheckBox_Unchecked"  Margin="5" Grid.Column="2" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
             <CheckBox x:Name="PipeServerCheckBox" Content="服务" ToolTip="监听服务,开启后接受其他联动工具控制显示内容"  Checked="PipeServerCheckBox_Checked" Unchecked="PipeServerCheckBox_Unchecked" Margin="5" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
             <CheckBox x:Name="LightModeCheckBox" Content="轻量" IsEnabled="False" ToolTip="纯显示模式,简化UI,仅服务模式有效"  Checked="LightModeCheckBox_Checked" Unchecked="LightModeCheckBox_Unchecked" Margin="5" Grid.Column="4" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
             <Button x:Name="ExitButton" Content="X" ToolTip="退出" Margin="5" Grid.Column="5" Click="ExitButton_Click"/>
