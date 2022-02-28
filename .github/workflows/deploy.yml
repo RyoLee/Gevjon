@@ -33,7 +33,7 @@ jobs:
         cd ../../../
         Remove-Item public -Recurse -ErrorAction Ignore
         mkdir public
-        cp -f version.txt ./public/
+        Copy-Item  version.txt ./public/ -force
         mv ./Gevjon-Core/bin/Release/Gevjon.7z ./public/
 
     - name: Upload artifact
