@@ -2,8 +2,7 @@
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RyoLee/Gevjon?include_prereleases&style=flat-square)
 [![HitCount](https://hits.dwyl.com/RyoLee/Gevjon.svg?style=flat-square)](http://hits.dwyl.com/RyoLee/Gevjon)
 ![GitHub](https://img.shields.io/github/license/RyoLee/Gevjon?style=flat-square)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/.NET%20Core%20Desktop/master?label=master&style=flat-square)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/.NET%20Core%20Desktop/dev?label=dev&style=flat-square)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/Deploy/master?label=Build&style=flat-square)
 
 ## Core
 
