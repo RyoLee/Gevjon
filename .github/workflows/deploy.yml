@@ -71,8 +71,12 @@ jobs:
       run: |
         VER=$(head -n 1 public/version.txt)
         echo "TAG_NAME=$VER" >> $GITHUB_ENV
+        CONTENT="Checksum\nSHA256:["$(sha256sum public//Gevjon.7z | awk '{print $1}')"]\n"
+        echo "DEFAULT_CONTENT=$CONTENT" >> $GITHUB_ENV
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
+        body: ${{ env.DEFAULT_CONTENT }}
+        generate_release_notes: true
         tag_name: ${{ env.TAG_NAME }}
         files: public/Gevjon.7z
