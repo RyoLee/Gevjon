@@ -1,8 +1,9 @@
 # Gevjon
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RyoLee/Gevjon?include_prereleases&style=flat-square)
 [![HitCount](https://hits.dwyl.com/RyoLee/Gevjon.svg?style=flat-square)](http://hits.dwyl.com/RyoLee/Gevjon)
-![GitHub](https://img.shields.io/github/license/RyoLee/Gevjon?style=flat-square)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/Deploy/master?label=Build&style=flat-square)
+[![GitHub all releases](https://img.shields.io/github/downloads/RyoLee/Gevjon/total?logo=Github&style=flat-square)](https://github.com/RyoLee/Gevjon/releases/latest)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RyoLee/Gevjon?include_prereleases&style=flat-square)](https://github.com/RyoLee/Gevjon/releases/latest)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/Deploy/master?label=Build&style=flat-square)](https://github.com/RyoLee/Gevjon/actions/workflows/deploy.yml)
+[![GitHub](https://img.shields.io/github/license/RyoLee/Gevjon?style=flat-square)](https://github.com/RyoLee/Gevjon/blob/master/LICENSE)
 
 ## Core
 
