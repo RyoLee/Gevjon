@@ -109,7 +109,6 @@ namespace Gevjon
                                         case MODES.issued:
                                             mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() =>
                                             {
-                                                mainWindow.LightModeCheckBox.IsChecked = true;
                                                 string id = json["id"].ToString();
                                                 string name = json["name"].ToString();
                                                 string desc = json["desc"].ToString();
