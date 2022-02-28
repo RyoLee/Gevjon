@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ master ]
     paths:
       - 'version.txt'
   pull_request:
@@ -13,38 +13,18 @@ on:
 jobs:
 
   build:
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-
+    if: github.ref == 'refs/heads/master'
+    runs-on: windows-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-        
-    - name: Set Version
-      run: |
-        VER=$(head -n 1 version.txt)
-        echo "TAG_NAME=$VER" >> $GITHUB_ENV
 
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
-                
-    - name: Build(Develop)
-      if: github.ref == 'refs/heads/dev'
-      run: |
-        msbuild /t:Restore /p:Configuration=Release
-        msbuild /m /p:Configuration=Release
-        cd ./Gevjon-Core/bin/Release
-        7z a Gevjon-dev.7z *
-        cd ../../../
-        Remove-Item public -Recurse -ErrorAction Ignore
-        mkdir public
-        mv ./Gevjon-Core/bin/Release/Gevjon-dev.7z ./public/
 
-    - name: Build(Master)
-      if: github.ref == 'refs/heads/master'
+    - name: Build
       run: |
         msbuild /t:Restore /p:Configuration=Release
         msbuild /m /p:Configuration=Release
@@ -53,14 +33,16 @@ jobs:
         cd ../../../
         Remove-Item public -Recurse -ErrorAction Ignore
         mkdir public
+        cp -f version.txt ./public/
         mv ./Gevjon-Core/bin/Release/Gevjon.7z ./public/
 
-    - name: Create Release
-      if: github.ref == 'refs/heads/master'
-      uses: softprops/action-gh-release@v1
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
       with:
-        tag_name: ${{ env.TAG_NAME }}
-        files: public/Gevjon.7z
+        name: output
+        path: |
+          public/Gevjon.7z
+          public/version.txt
 
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
@@ -68,15 +50,29 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./public
         keep_files: true
-
-    - name: Purge CDN cache(Develop)
-      if: github.ref == 'refs/heads/dev'
+ 
+  release:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:      
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: output
+        path: |
+          public/Gevjon.7z
+          version.txt
+    - name: Set Version
       run: |
-        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@dev/version.txt
-        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon-dev.7z
-
-    - name: Purge CDN cache(Master)
+        VER=$(head -n 1 version.txt)
+        echo "TAG_NAME=$VER" >> $GITHUB_ENV
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}
+        files: public/Gevjon.7z
+    - name: Purge CDN cache
       if: github.ref == 'refs/heads/master'
       run: |
-        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@master/version.txt
+        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/version.txt
         curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z
