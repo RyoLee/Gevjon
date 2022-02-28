@@ -39,7 +39,8 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: output
+        name: Gevjon
+        retention-days: 1
         path: |
           public/Gevjon.7z
           public/version.txt
@@ -50,6 +51,12 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./public
         keep_files: true
+        
+    - name: Purge CDN cache
+      if: github.ref == 'refs/heads/master'
+      run: |
+        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/version.txt
+        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z
  
   release:
     if: github.ref == 'refs/heads/master'
@@ -58,21 +65,14 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:
-        name: output
-        path: |
-          public/Gevjon.7z
-          version.txt
+        name: Gevjon
+        path: public
     - name: Set Version
       run: |
-        VER=$(head -n 1 version.txt)
+        VER=$(head -n 1 public/version.txt)
         echo "TAG_NAME=$VER" >> $GITHUB_ENV
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ env.TAG_NAME }}
         files: public/Gevjon.7z
-    - name: Purge CDN cache
-      if: github.ref == 'refs/heads/master'
-      run: |
-        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/version.txt
-        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z
