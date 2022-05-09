@@ -65,7 +65,9 @@
 
 #### 数据更新
 
-数据来源为[mycard/ygopro-database (github.com)](https://github.com/mycard/ygopro-database),后续更新请自行下载，将locales文件夹拖放到DB/Cover.py脚本上生成data.json数据文件
+~~数据来源为[mycard/ygopro-database (github.com)](https://github.com/mycard/ygopro-database),后续更新请自行下载，将locales文件夹拖放到DB/Cover.py脚本上生成data.json数据文件~~
+
+v1.3.0以后版本数据来源为[百鸽](https://ygocdb.com/),由于该来源api暂未提供版本跟踪相关信息,暂不提供自动更新检查
 
 #### 风险声明
 

@@ -1,5 +1,4 @@
-name: Deploy
-
+name: DEPLOY
 on:
   push:
     branches: [ master ]
@@ -9,6 +8,7 @@ on:
     branches: [ master ]
     paths:
       - 'version.txt'
+  workflow_dispatch:
 
 jobs:
   build:

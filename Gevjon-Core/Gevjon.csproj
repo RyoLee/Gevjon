@@ -195,7 +195,7 @@
   <PropertyGroup>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)DB\data.json" "$(TargetDir)" /Y
+    <PostBuildEvent>xcopy "$(SolutionDir)Gevjon-Core\cards.json" "$(TargetDir)" /Y
 xcopy "$(SolutionDir)README.md" "$(TargetDir)" /Y
 xcopy "$(SolutionDir)version.txt" "$(TargetDir)" /Y</PostBuildEvent>
   </PropertyGroup>
