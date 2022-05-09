@@ -72,7 +72,7 @@ namespace Gevjon
                     Console.WriteLine("Client connected.");
                     try
                     {
-                        using (System.IO.StreamReader sr = new System.IO.StreamReader(pipeServer))
+                        using (StreamReader sr = new StreamReader(pipeServer))
                         {
                             string temp = "";
                             string line;
@@ -93,28 +93,23 @@ namespace Gevjon
                                         case MODES.id:
                                             mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() =>
                                             {
-                                                mainWindow.CardIdBox.Text = json["id"].ToString();
-                                                mainWindow.CardNameBox.Text = "";
-                                                mainWindow.FindById();
+                                                mainWindow.CardSearchBox.Text = json["id"].ToString();
+                                                mainWindow.Find(true);
                                             }));
                                             break;
                                         case MODES.name:
                                             mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() =>
                                             {
-                                                mainWindow.CardIdBox.Text = "";
-                                                mainWindow.CardNameBox.Text = json["name"].ToString();
-                                                mainWindow.FindByName();
+                                                mainWindow.CardSearchBox.Text = json["name"].ToString();
+                                                mainWindow.Find(false);
                                             }));
                                             break;
                                         case MODES.issued:
                                             mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() =>
                                             {
-                                                string id = json["id"].ToString();
-                                                string name = json["name"].ToString();
-                                                string desc = json["desc"].ToString();
+                                                string data = json["data"].ToString();
+                                                Card card = serializer.Deserialize<Card>(data);
                                                 List<Card> cards = new List<Card>() { };
-                                                Card card = new Card(id, name, desc);
-                                                card.isIssued = true;
                                                 cards.Add(card);
                                                 mainWindow.UpdateCardList(cards);
                                             }));
@@ -141,7 +136,7 @@ namespace Gevjon
                             }
                         }
                     }
-                    catch (System.IO.IOException e)
+                    catch (IOException e)
                     {
                         Console.WriteLine("ERROR: {0}", e.Message);
                     }
@@ -160,129 +155,122 @@ namespace Gevjon
         }
         public class YGOdb
         {
-            static string dbFile = "data.json";
-            Dictionary<string, JsonDataItem> ids;
+            static string dbFile = "cards.json";
 
-            Dictionary<string, string> names;
-            public class JsonDataItem
-            {
-                public string en;
-                public string desc;
-                public string ja;
-                public string zh;
-            }
+            Dictionary<string, Card> datas;
             public YGOdb()
             {
-                names = new Dictionary<string, string>();
+                datas = new Dictionary<string, Card>();
                 using (StreamReader file = File.OpenText(dbFile))
                 {
                     string jsonStr = file.ReadToEnd();
                     JavaScriptSerializer serializer = new JavaScriptSerializer();
                     serializer.MaxJsonLength = 1024 * 1024 * 16;
-                    Dictionary<string, JsonDataItem> json = serializer.Deserialize<Dictionary<string, JsonDataItem>>(jsonStr);
-                    ids = new Dictionary<string, JsonDataItem>();
-                    foreach (var item in json)
+                    Dictionary<string, Card> cards = serializer.Deserialize<Dictionary<string, Card>>(jsonStr);
+                    foreach (var item in cards)
                     {
-                        //JsonDataItem jsonDataItem= serializer.Deserialize<JsonDataItem>(item.Value.ToString());
-                        JsonDataItem jsonDataItem = item.Value;
-                        if (jsonDataItem.en != null && !"".Equals(jsonDataItem.en) && !names.ContainsKey(jsonDataItem.en))
+                        Card card = item.Value;
+                        if (card.en_name != null && !"".Equals(card.en_name) && !datas.ContainsKey(card.en_name))
                         {
-                            names.Add(jsonDataItem.en, item.Key);
+                            datas.Add(card.en_name, card);
                         }
-                        if (jsonDataItem.zh != null && !"".Equals(jsonDataItem.zh) && !names.ContainsKey(jsonDataItem.zh))
+                        if (card.cn_name != null && !"".Equals(card.cn_name) && !datas.ContainsKey(card.cn_name))
                         {
-                            names.Add(jsonDataItem.zh, item.Key);
+                            datas.Add(card.cn_name, card);
                         }
-                        if (jsonDataItem.ja != null && !"".Equals(jsonDataItem.ja) && !names.ContainsKey(jsonDataItem.ja))
+                        if (card.cnocg_n != null && !"".Equals(card.cnocg_n) && !datas.ContainsKey(card.cnocg_n))
                         {
-                            names.Add(jsonDataItem.ja, item.Key);
+                            datas.Add(card.cnocg_n, card);
                         }
-                        ids.Add(item.Key, jsonDataItem);
+                        if (card.jp_name != null && !"".Equals(card.jp_name) && !datas.ContainsKey(card.jp_name))
+                        {
+                            datas.Add(card.jp_name, card);
+                        }
+                        if (card.jp_ruby != null && !"".Equals(card.jp_ruby) && !datas.ContainsKey(card.jp_ruby))
+                        {
+                            datas.Add(card.jp_ruby, card);
+                        }
+                        if (card.cid != 0 && !datas.ContainsKey(card.cid.ToString()))
+                        {
+                            datas.Add(card.cid.ToString(), card);
+                        }
                     }
                 }
             }
-            public List<Card> FindById(string id, string srcName)
+            public List<Card> Find(string key,bool exact)
             {
                 List<Card> cards = new List<Card>();
-                if (null == id || "".Equals(id.Trim()) || !ids.ContainsKey(id))
+                if (null == key || "".Equals(key.Trim()))
                 {
                     return cards;
                 }
-                cards.Add(new Card(id, srcName == null || "".Equals(srcName.Trim()) ? "" : srcName, ids[id]));
-                return cards;
-
-            }
-            public List<Card> FindByName(string name)
-            {
-                List<Card> cards = new List<Card>();
-                if (null == name || "".Equals(name.Trim()))
+                foreach (var item in datas)
                 {
-                    return cards;
-                }
-                Dictionary<string, string> tIds = new Dictionary<string, string>(); 
-                foreach (var item in names)
-                {
-                    if (!tIds.ContainsKey(item.Value) && item.Key.Contains(name))
+                    if (!cards.Contains(item.Value) )
                     {
-                        string cid = item.Value;
-                        string cname = item.Key;
-                        tIds.Add(cid, cname);
-                    }
-                }
-                foreach (var key in tIds.Keys)
-                {
-                    List<Card> temp = FindById(key, tIds[key]);
-                    if (temp.Count != 0)
-                    {
-                        for (int j = 0; j < temp.Count; j++)
+                        if (!exact)
                         {
-                            cards.Add(temp[j]);
+                            if (item.Key.Contains(key))
+                            {
+                                cards.Add(item.Value);
+                            }
+                        }
+                        else
+                        {
+                            if (item.Key.Equals(key))
+                            {
+                                cards.Add(item.Value);
+                            }
                         }
                     }
                 }
                 return cards;
             }
         }
+
+        public class Text
+        {
+            public string types { get; set; }
+            public string pdesc { get; set; }
+            public string desc { get; set; }
+        }
         public class Card
         {
-            public string id;
-            public string src;
-            public string en;
-            public string ja;
-            public string zh;
-            public string desc;
-            public bool isIssued = false;
-            public Card(string id, string src, string desc)
-            {
-                this.id = id;
-                this.src = src;
-                this.desc = desc;
-                this.isIssued = true;
-            }
-            public Card(string id, string src, YGOdb.JsonDataItem data)
-            {
-                this.id = id;
-                this.src = src;
-                this.en = data.en;
-                this.ja = data.ja;
-                this.zh = data.zh;
-                this.desc = data.desc;
-            }
+            public int cid { get; set; }
+            public int id { get; set; }
+            public string cn_name { get; set; }
+            public string cnocg_n { get; set; }
+            public string jp_ruby { get; set; }
+            public string jp_name { get; set; }
+            public string en_name { get; set; }
+            public Text text { get; set; }
             public string ItemName
             {
-                get { return isEmpty(src) ? isEmpty(zh) ? isEmpty(ja) ? en : ja : zh : src; }
+                get { return isEmpty(cn_name) ? isEmpty(cnocg_n) ? isEmpty(jp_name) ? isEmpty(jp_ruby) ? jp_ruby : en_name : jp_name : cnocg_n : cn_name; }
             }
             public override string ToString()
             {
-                return isIssued ? desc : isEmpty(en) ? "" : reformat(en) + reformat(ja) + reformat(zh) + "\n" + desc;
-            }
-            private string reformat(string str)
-            {
-                return isEmpty(str) ? "" : "【" + str + "】" + "\n";
+                string res = reformat(en_name) + reformat(jp_name) + reformat(cn_name) + "\n";
+                res += text.types + "\n\n\n";
+                if (!isEmpty(text.pdesc))
+                {
+                    res += ("------------------------"
+                    + "\n"
+                    + text.pdesc
+                    + "\n"
+                    + "------------------------"
+                    + "\n\n\n");
+                }
+                res += text.desc;
+                return res;
             }
             private bool isEmpty(string str)
             {
                 return (str == null || "".Equals(str.Trim()));
+            }
+            private string reformat(string str)
+            {
+                return isEmpty(str) ? "" : "【" + str + "】" + "\n";
             }
         }
 
@@ -329,8 +317,7 @@ namespace Gevjon
             PipeServerCheckBox.Background = Background;
             LightModeCheckBox.Background = Background;
             ExitButton.Background = Background;
-            CardIdBox.Background = Background;
-            CardNameBox.Background = Background;
+            CardSearchBox.Background = Background;
             UpdateCheckBox.Background = Background;
             CardComboBox.Background = Background;
             CardDescBox.Background = Background;
@@ -346,20 +333,12 @@ namespace Gevjon
             config.Save(ConfigurationSaveMode.Modified);
         }
 
-        private void FindById()
+        private void Find(bool exact)
         {
             CardComboBox.IsEnabled = false;
             CardComboBox.ItemsSource = null;
             CardComboBox.Items.Refresh();
-            List<Card> cards = db.FindById(CardIdBox.Text, "");
-            UpdateCardList(cards);
-        }
-        private void FindByName()
-        {
-            CardComboBox.IsEnabled = false;
-            CardComboBox.ItemsSource = null;
-            CardComboBox.Items.Refresh();
-            List<Card> cards = db.FindByName(CardNameBox.Text);
+            List<Card> cards = db.Find(CardSearchBox.Text, exact);
             UpdateCardList(cards);
         }
 
@@ -395,20 +374,11 @@ namespace Gevjon
             }
         }
 
-        private void CardIdBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void CardSearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == System.Windows.Input.Key.Enter)
             {
-                FindById();
-                e.Handled = true;
-            }
-        }
-
-        private void CardNameBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.Enter)
-            {
-                FindByName();
+                Find(System.Windows.Input.Keyboard.Modifiers == System.Windows.Input.ModifierKeys.Control);
                 e.Handled = true;
             }
         }
