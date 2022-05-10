@@ -32,7 +32,6 @@ jobs:
         cd ../../../
         Remove-Item public -Recurse -ErrorAction Ignore
         mkdir public
-        Copy-Item  version.txt ./public/ -force
         mv ./Gevjon-Core/bin/Release/Gevjon.7z ./public/
 
     - name: Upload artifact
@@ -42,20 +41,6 @@ jobs:
         retention-days: 1
         path: |
           public/Gevjon.7z
-          public/version.txt
-
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public
-        keep_files: true
-        
-    - name: Purge CDN cache
-      if: github.ref == 'refs/heads/master'
-      run: |
-        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/version.txt
-        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z
  
   release:
     needs: build
@@ -67,9 +52,20 @@ jobs:
       with:
         name: Gevjon
         path: public
-    - name: Set Version
+    - name: Pack
       run: |
-        VER=$(head -n 1 public/version.txt)
+        mkdir -p ./pack
+        mv ./public/Gevjon.7z ./pack/
+        cd ./pack
+        7z x Gevjon.7z
+        rm Gevjon.7z -f
+        wget -q -O - https://ygocdb.com/api/v0/cards.zip | gunzip - > ./cards.json
+        wget -q -O ./cards.ver https://ygocdb.com/api/v0/cards.zip.md5
+        7z a Gevjon.7z *
+        cd ..
+        mv ./pack/version.txt ./public/
+        mv ./pack/Gevjon.7z ./public/
+        VER=$(head -n 1 ./public/version.txt)
         echo "TAG_NAME=$VER" >> $GITHUB_ENV
         CONTENT="Checksum(SHA256): "$(sha256sum public//Gevjon.7z | awk '{print $1}')
         echo "DEFAULT_CONTENT=$CONTENT" >> $GITHUB_ENV
@@ -80,3 +76,16 @@ jobs:
         generate_release_notes: true
         tag_name: ${{ env.TAG_NAME }}
         files: public/Gevjon.7z
+
+    - name: Deploy github pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+        keep_files: true
+        
+    - name: Purge CDN cache
+      if: github.ref == 'refs/heads/master'
+      run: |
+        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/version.txt
+        curl https://purge.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z

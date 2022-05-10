@@ -117,6 +117,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -196,6 +198,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(SolutionDir)Gevjon-Core\cards.json" "$(TargetDir)" /Y
+xcopy "$(SolutionDir)Gevjon-Core\cards.ver" "$(TargetDir)" /Y
 xcopy "$(SolutionDir)README.md" "$(TargetDir)" /Y
 xcopy "$(SolutionDir)version.txt" "$(TargetDir)" /Y</PostBuildEvent>
   </PropertyGroup>

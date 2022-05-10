@@ -31,6 +31,7 @@ using System.IO.Pipes;
 using System.Web.Script.Serialization;
 using System.Threading.Tasks;
 using System.IO;
+using System.IO.Compression;
 
 namespace Gevjon
 {
@@ -158,8 +159,7 @@ namespace Gevjon
             static string dbFile = "cards.json";
 
             Dictionary<string, Card> datas;
-            public YGOdb()
-            {
+            public void reload() {
                 datas = new Dictionary<string, Card>();
                 using (StreamReader file = File.OpenText(dbFile))
                 {
@@ -196,6 +196,10 @@ namespace Gevjon
                         }
                     }
                 }
+            }
+            public YGOdb()
+            {
+                reload();
             }
             public List<Card> Find(string key,bool exact)
             {
@@ -498,17 +502,48 @@ namespace Gevjon
                     string HITS_URL = "https://hits.dwyl.com/RyoLee/Gevjon.svg";
                     string VER_URL = GetSetting("verURL", "https://cdn.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/version.txt");
                     string REL_URL = GetSetting("dlURL", "https://cdn.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z");
+                    string DATA_VER_URL = GetSetting("dataVerURL", "https://ygocdb.com/api/v0/cards.zip.md5");
+                    string DATA_REL_URL = GetSetting("dataDlURL", "https://ygocdb.com/api/v0/cards.zip");
                     string remote_ver_str = await TryGetAsync(VER_URL);
                     string locale_ver_str;
-                    using (StreamReader reader = new StreamReader("version.txt")) {
+                    using (StreamReader reader = new StreamReader("version.txt"))
+                    {
                         locale_ver_str = reader.ReadLine() ?? "";
                     }
                     var remote_ver = new Version(remote_ver_str);
                     var locale_ver = new Version(locale_ver_str);
-                    if (remote_ver.CompareTo(locale_ver)==1) {
-                        if (MessageBox.Show("本地:\t" + locale_ver_str + "\n远端:\t" + remote_ver_str + "\n是否更新?", "发现新版本", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes) {
+                    if (remote_ver.CompareTo(locale_ver) == 1)
+                    {
+                        if (MessageBox.Show("本地:\t" + locale_ver_str + "\n远端:\t" + remote_ver_str + "\n是否更新?", "发现新版本", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                        {
                             await TryGetAsync(HITS_URL);
                             System.Diagnostics.Process.Start(REL_URL);
+                        }
+                    }
+                    string remote_data_ver_str = await TryGetAsync(DATA_VER_URL);
+                    string locale_data_ver_str;
+                    using (StreamReader reader = new StreamReader("cards.ver"))
+                    {
+                        locale_data_ver_str = reader.ReadLine() ?? "";
+                    }
+                    if (!locale_data_ver_str.Equals(remote_data_ver_str))
+                    {
+                        if (MessageBox.Show("本地卡片数据与服务器不一致\n是否更新?", "发现新数据", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                        {
+                            await TryGetAsync(HITS_URL);
+                            using (var client = new System.Net.WebClient())
+                            {
+                                client.DownloadFile(DATA_REL_URL, "cards.zip");
+                                using (var zipArchive = ZipFile.OpenRead("cards.zip"))
+                                {
+                                    foreach (ZipArchiveEntry entry in zipArchive.Entries)
+                                    {
+                                        entry.ExtractToFile(entry.Name, true);
+                                    }
+                                }
+                                client.DownloadFile(DATA_VER_URL, "cards.ver");
+                                db.reload();
+                            }
                         }
                     }
                 }
