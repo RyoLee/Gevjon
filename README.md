@@ -1,10 +1,9 @@
 # Gevjon
 [![HitCount](https://hits.dwyl.com/RyoLee/Gevjon.svg?style=flat-square)](https://github.com/RyoLee/Gevjon) <!-- (http://hits.dwyl.com/RyoLee/Gevjon) -->
-[![GitHub all releases](https://img.shields.io/github/downloads/RyoLee/Gevjon/total?logo=Github&style=flat-square)](https://github.com/RyoLee/Gevjon/releases/latest)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RyoLee/Gevjon?include_prereleases&style=flat-square#?sort=date)](https://github.com/RyoLee/Gevjon/releases/latest)
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/Deploy/master?label=CI&style=flat-square)](https://github.com/RyoLee/Gevjon/actions/workflows/deploy.yml)
 [![GitHub](https://img.shields.io/github/license/RyoLee/Gevjon?style=flat-square)](https://github.com/RyoLee/Gevjon/blob/master/LICENSE)
-
+<!-- [![GitHub all releases](https://img.shields.io/github/downloads/RyoLee/Gevjon/total?logo=Github&style=flat-square)](https://github.com/RyoLee/Gevjon/releases/latest) -->
 ## Core
 
 本项目为Gevjon项目组件core组件,仅提供卡查功能
@@ -79,7 +78,7 @@
 
 ~~数据来源为[mycard/ygopro-database (github.com)](https://github.com/mycard/ygopro-database),后续更新请自行下载，将locales文件夹拖放到DB/Cover.py脚本上生成data.json数据文件~~
 
-v1.3.0以后版本数据来源为[百鸽](https://ygocdb.com/),由于该来源api暂未提供版本跟踪相关信息,暂不提供自动更新检查(后续视情况增加)
+v1.3.0以后版本数据来源为[百鸽](https://ygocdb.com/),~~由于该来源api暂未提供版本跟踪相关信息,暂不提供自动更新检查(后续视情况增加),~~已支持自动更新,感谢@mercury233 
 
 #### 风险声明
 
@@ -87,7 +86,7 @@ v1.3.0以后版本数据来源为[百鸽](https://ygocdb.com/),由于该来源ap
 
 至于外接了其他控制器的情况,那要看控制器是怎么实现的了,例如控制器使用OCR实现,相对内存读取实现风险会低很多(因为特征上来看和主播开OBS直播是类似的的),但是也不是0风险
 
-不管是基于内存读取还是图像识别/OCR,**本质都是违反K社ToS的第三方软件**,因为K社官方并没有发布任何API接口或SDK(以及配套的许可文档)允许第三方开发类似的工具
+不管是基于内存读取还是图像识别/OCR,**本质都是违反K社ToS的第三方软件**,因为K社官方并没有发布任何API接口或SDK(以及最关键的**许可文档/文件**)允许第三方开发类似的工具
 
 **理论上检测很容易,不要以为只读不写/或者截图就安全,如果想查,反作弊程序给相关API下点钩子就能查,甚至暴力一点的会不管你的隐私信息直接用进程名的黑名单查(如TP之流)**
 
