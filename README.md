@@ -1,10 +1,9 @@
 # Gevjon
 [![HitCount](https://hits.dwyl.com/RyoLee/Gevjon.svg?style=flat-square)](https://github.com/RyoLee/Gevjon) <!-- (http://hits.dwyl.com/RyoLee/Gevjon) -->
-<!-- [![GitHub all releases](https://img.shields.io/github/downloads/RyoLee/Gevjon/total?logo=Github&style=flat-square)](https://github.com/RyoLee/Gevjon/releases/latest) -->
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RyoLee/Gevjon?include_prereleases&style=flat-square#?sort=date)](https://github.com/RyoLee/Gevjon/releases/latest)
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/Deploy/master?label=CI&style=flat-square)](https://github.com/RyoLee/Gevjon/actions/workflows/deploy.yml)
 [![GitHub](https://img.shields.io/github/license/RyoLee/Gevjon?style=flat-square)](https://github.com/RyoLee/Gevjon/blob/master/LICENSE)
-
+<!-- [![GitHub all releases](https://img.shields.io/github/downloads/RyoLee/Gevjon/total?logo=Github&style=flat-square)](https://github.com/RyoLee/Gevjon/releases/latest) -->
 ## Core
 
 本项目为Gevjon项目组件core组件,仅提供卡查功能
