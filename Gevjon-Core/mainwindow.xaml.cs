@@ -500,8 +500,8 @@ namespace Gevjon
                 try
                 {
                     string HITS_URL = "https://hits.dwyl.com/RyoLee/Gevjon.svg";
-                    string VER_URL = GetSetting("verURL", "https://cdn.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/version.txt");
-                    string REL_URL = GetSetting("dlURL", "https://cdn.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z");
+                    string VER_URL = GetSetting("verURL", "https://raw.githubusercontents.com/RyoLee/Gevjon/gh-pages/version.txt");
+                    string REL_URL = GetSetting("dlURL", "https://github.com/RyoLee/Gevjon/releases/latest");
                     string DATA_VER_URL = GetSetting("dataVerURL", "https://ygocdb.com/api/v0/cards.zip.md5");
                     string DATA_REL_URL = GetSetting("dataDlURL", "https://ygocdb.com/api/v0/cards.zip");
                     string remote_ver_str = await TryGetAsync(VER_URL);
