@@ -4,7 +4,7 @@
 [![Total Lines](https://img.shields.io/tokei/lines/github.com/RyoLee/Gevjon?label=Total%20Lines&style=flat-square)](https://github.com/RyoLee/Gevjon)
 [![GitHub Issues](https://img.shields.io/github/issues/RyoLee/Gevjon?label=Issues&style=flat-square)](https://github.com/RyoLee/Gevjon/issues)
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/CI/master?label=CI&style=flat-square)](https://github.com/RyoLee/Gevjon/actions/workflows/deploy.yml)
-[![CodeQL](https://img.shields.io/github/workflow/status/RyoLee/Gevjon/CodeQL/master?label=CodeQL&style=flat-square)](https://github.com/RyoLee/Gevjon/security/code-scanning)
+[![Analysis](https://img.shields.io/codefactor/grade/github/RyoLee/Gevjon?label=Code%20Quality&style=flat-square)](https://www.codefactor.io/repository/github/ryolee/gevjon)
 [![GitHub](https://img.shields.io/github/license/RyoLee/Gevjon?style=flat-square)](https://github.com/RyoLee/Gevjon/blob/master/LICENSE)
 [![GitHub all releases](https://img.shields.io/github/downloads/RyoLee/Gevjon/total?logo=Github&style=flat-square)](https://github.com/RyoLee/Gevjon/releases/latest)
 ## Core
