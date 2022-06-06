@@ -183,7 +183,6 @@ namespace Gevjon {
                                             break;
                                         default:
                                             break;
-
                                     }
                                     /*using (System.IO.StreamWriter sw = new System.IO.StreamWriter(pipeServer))
                                     {
@@ -254,7 +253,7 @@ namespace Gevjon {
             }
             public List<Card> Find(string key, bool exact) {
                 List<Card> cards = new List<Card>();
-                if (null == key || "".Equals(key.Trim())) {
+                if (key == null || "".Equals(key.Trim())) {
                     return cards;
                 }
                 foreach (var item in datas) {
@@ -322,7 +321,7 @@ namespace Gevjon {
 
         enum MODES {
             id, name, issued
-        };
+        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             InitBackground();
@@ -444,7 +443,6 @@ namespace Gevjon {
         private void Window_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e) {
             GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Background.Opacity = 1; }));
             e.Handled = true;
-
         }
 
         private void Window_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) {

@@ -42,12 +42,12 @@ jobs:
         retention-days: 1
         path: |
           public/Gevjon.7z
- 
+
   release:
     needs: build
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    steps:      
+    steps:   
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:

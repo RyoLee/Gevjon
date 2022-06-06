@@ -14,9 +14,11 @@ try:
     msg = str(sys.argv[1])
     print(msg)
     win32file.WriteFile(file_handle, str.encode(msg))
+except Exception as ex:
+    repr(ex)
 finally:
     try:
         win32file.CloseHandle(file_handle)
-    except:
-        pass
+    except Exception as ex:
+        repr(ex)
 print("done")
