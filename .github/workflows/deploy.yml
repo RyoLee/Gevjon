@@ -3,11 +3,11 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'version.txt'
+      - 'AssemblyInfo.cs'
   pull_request:
     branches: [ master ]
     paths:
-      - 'version.txt'
+      - 'AssemblyInfo.cs'
   workflow_dispatch:
 
 jobs:
@@ -28,6 +28,7 @@ jobs:
         msbuild /t:Restore /p:Configuration=Release
         msbuild /m /p:Configuration=Release
         cd ./Gevjon-Core/bin/Release
+        (get-item Gevjon.exe).VersionInfo.ProductVersion > version.txt
         7z a Gevjon.7z *
         cd ../../../
         Remove-Item public -Recurse -ErrorAction Ignore
@@ -59,11 +60,12 @@ jobs:
         cd ./pack
         7z x Gevjon.7z
         rm Gevjon.7z -f
+        mv ./version.txt ./public/
         wget -q -O - https://ygocdb.com/api/v0/cards.zip | gunzip - > ./cards.json
-        wget -q -O ./cards.ver https://ygocdb.com/api/v0/cards.zip.md5
+        ver=$(curl -s https://ygocdb.com/api/v0/cards.zip.md5|tr -d '"')
+        echo "$(jq --arg variable "$ver" '.dataVer = $variable' config.json)" > ./config.json
         7z a Gevjon.7z *
         cd ..
-        mv ./pack/version.txt ./public/
         mv ./pack/Gevjon.7z ./public/
         VER=$(head -n 1 ./public/version.txt)
         echo "TAG_NAME=$VER" >> $GITHUB_ENV

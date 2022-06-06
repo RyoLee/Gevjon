@@ -1,0 +1,17 @@
+{
+  "autoUpdate": "1",
+  "alpha": "0.5",
+  "width": "380",
+  "height": "400",
+  "title": "masterduel",
+  "onTop": "1",
+  "pipeServer": "1",
+  "lightMode": "0",
+  "currentFontName": "Microsoft YaHei UI",
+  "currentFontSize": "16",
+  "verURL": "https://ghproxy.com/https://raw.githubusercontent.com/RyoLee/Gevjon/gh-pages/version.txt",
+  "dlURL": "https://github.com/RyoLee/Gevjon/releases/latest",
+  "dataVerURL": "https://ygocdb.com/api/v0/cards.zip.md5",
+  "dataDlURL": "https://ygocdb.com/api/v0/cards.zip",
+  "dataVer": "0000"
+}
