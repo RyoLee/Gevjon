@@ -60,7 +60,7 @@ jobs:
         cd ./pack
         7z x Gevjon.7z
         rm Gevjon.7z -f
-        mv ./version.txt ./public/
+        mv ./version.txt ../public/
         wget -q -O - https://ygocdb.com/api/v0/cards.zip | gunzip - > ./cards.json
         ver=$(curl -s https://ygocdb.com/api/v0/cards.zip.md5|tr -d '"')
         echo "$(jq --arg variable "$ver" '.dataVer = $variable' config.json)" > ./config.json
