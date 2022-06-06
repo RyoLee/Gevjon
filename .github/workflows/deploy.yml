@@ -3,11 +3,11 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'Gevjon-Core\Properties\AssemblyInfo.cs'
+      - 'Gevjon-Core/Properties/AssemblyInfo.cs'
   pull_request:
     branches: [ master ]
     paths:
-      - 'Gevjon-Core\Properties\AssemblyInfo.cs'
+      - 'Gevjon-Core/Properties/AssemblyInfo.cs'
   workflow_dispatch:
 
 jobs:
