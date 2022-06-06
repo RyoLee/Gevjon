@@ -1,4 +1,4 @@
-﻿//  ---------------------------------------------------------------------------------
+//  ---------------------------------------------------------------------------------
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 // 
 //  The MIT License (MIT)
@@ -24,15 +24,12 @@
 
 using System.Windows;
 
-namespace Gevjon
-{
+namespace Gevjon {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
-    {
-        public App()
-        {
+    public partial class App : Application {
+        public App() {
         }
     }
 }
