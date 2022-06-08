@@ -46,12 +46,8 @@ namespace Gevjon {
         class Config {
             private string path;
             private volatile Dictionary<string, string> datas;
-            public string get(string k, string d) {
+            public string get(string k) {
                 load();
-                if (!datas.ContainsKey(k)) {
-                    datas[k] = d;
-                    save();
-                }
                 return datas[k];
             }
             public void set(string k, string v) {
@@ -60,14 +56,48 @@ namespace Gevjon {
             }
             public Config(String path) {
                 this.path = path;
+                this.datas = init();
+                load();
+                save();
             }
             private void load() {
-                using (StreamReader file = File.OpenText(path)) {
-                    string jsonStr = file.ReadToEnd();
-                    JavaScriptSerializer serializer = new JavaScriptSerializer();
-                    serializer.MaxJsonLength = 1024 * 1024 * 16;
-                    datas = serializer.Deserialize<Dictionary<string, string>>(jsonStr);
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                serializer.MaxJsonLength = 1024 * 1024 * 16;
+                if (File.Exists(path)) {
+                    using (StreamReader file = File.OpenText(path)) {
+                        string jsonStr = file.ReadToEnd();
+                        var _datas = serializer.Deserialize<Dictionary<string, string>>(jsonStr);
+                        foreach (var data in _datas) {
+                            datas[data.Key] = data.Value;
+                        }
+                    }
                 }
+            }
+            private Dictionary<string, string> init() {
+                Dictionary<string, string> res = new Dictionary<string, string>();
+                var defaultCfg = new {
+                    autoUpdate = "1",
+                    alpha = "0.5",
+                    left = "0",
+                    top = "0",
+                    width = "380",
+                    height = "400",
+                    title = "masterduel",
+                    onTop = "1",
+                    pipeServer = "1",
+                    lightMode = "0",
+                    currentFontName = "Microsoft YaHei UI",
+                    currentFontSize = "16",
+                    verURL = "https://ghproxy.com/https://raw.githubusercontent.com/RyoLee/Gevjon/gh-pages/version.txt",
+                    dlURL = "https://github.com/RyoLee/Gevjon/releases/latest",
+                    dataVerURL = "https://ygocdb.com/api/v0/cards.zip.md5",
+                    dataDlURL = "https://ygocdb.com/api/v0/cards.zip",
+                    dataVer = "0000"
+                };
+                foreach (var prop in defaultCfg.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) {
+                    res[prop.Name] = prop.GetValue(defaultCfg, null).ToString();
+                }
+                return res;
             }
             private void save() {
                 JavaScriptSerializer serializer = new JavaScriptSerializer();
@@ -326,18 +356,18 @@ namespace Gevjon {
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             InitBackground();
             pipeServer = new PipeServer(this);
-            UpdateCheckBox.IsChecked = "1".Equals(config.get("autoUpdate", "1"));
-            Background.Opacity = float.Parse(config.get("alpha", "0.75"));
+            UpdateCheckBox.IsChecked = "1".Equals(config.get("autoUpdate"));
+            Background.Opacity = float.Parse(config.get("alpha"));
 
-            Left = int.Parse(config.get("left", "0"));
-            Top = int.Parse(config.get("top", "0"));
-            Width = int.Parse(config.get("width", "300"));
-            Height = int.Parse(config.get("height", "600"));
-            CardDescBox.FontFamily = new System.Windows.Media.FontFamily(config.get("currentFontName", "Microsoft YaHei UI"));
-            CardDescBox.FontSize = int.Parse(config.get("currentFontSize", "14"));
-            PipeServerCheckBox.IsChecked = "1".Equals(config.get("pipeServer", "0"));
-            LightModeCheckBox.IsChecked = "1".Equals(config.get("lightMode", "0"));
-            OnTopCheckBox.IsChecked = "1".Equals(config.get("onTop", "1"));
+            Left = int.Parse(config.get("left"));
+            Top = int.Parse(config.get("top"));
+            Width = int.Parse(config.get("width"));
+            Height = int.Parse(config.get("height"));
+            CardDescBox.FontFamily = new System.Windows.Media.FontFamily(config.get("currentFontName"));
+            CardDescBox.FontSize = int.Parse(config.get("currentFontSize"));
+            PipeServerCheckBox.IsChecked = "1".Equals(config.get("pipeServer"));
+            LightModeCheckBox.IsChecked = "1".Equals(config.get("lightMode"));
+            OnTopCheckBox.IsChecked = "1".Equals(config.get("onTop"));
             if (OnTopCheckBox.IsChecked ?? false) {
                 Activate();
                 Topmost = false;
@@ -446,7 +476,7 @@ namespace Gevjon {
         }
 
         private void Window_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) {
-            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Background.Opacity = float.Parse(config.get("alpha", "0.75")); }));
+            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Background.Opacity = float.Parse(config.get("alpha")); }));
             e.Handled = true;
         }
 
@@ -468,8 +498,8 @@ namespace Gevjon {
                     Width = 30;
                     Height = 30;
                 } else {
-                    Width = int.Parse(config.get("width", "300"));
-                    Height = int.Parse(config.get("height", "600"));
+                    Width = int.Parse(config.get("width"));
+                    Height = int.Parse(config.get("height"));
                 }
                 e.Handled = true;
             }
@@ -489,10 +519,10 @@ namespace Gevjon {
         private void CheckUpdate() {
             if (System.Threading.Monitor.TryEnter(UpdateCheckBox)) {
                 try {
-                    string VER_URL = config.get("verURL", "https://raw.githubusercontent.com/RyoLee/Gevjon/gh-pages/version.txt");
-                    string REL_URL = config.get("dlURL", "https://github.com/RyoLee/Gevjon/releases/latest");
-                    string DATA_VER_URL = config.get("dataVerURL", "https://ygocdb.com/api/v0/cards.zip.md5");
-                    string DATA_REL_URL = config.get("dataDlURL", "https://ygocdb.com/api/v0/cards.zip");
+                    string VER_URL = config.get("verURL");
+                    string REL_URL = config.get("dlURL");
+                    string DATA_VER_URL = config.get("dataVerURL");
+                    string DATA_REL_URL = config.get("dataDlURL");
                     string remote_ver_str = HttpGet(VER_URL);
                     string locale_ver_str = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).ProductVersion;
 
@@ -504,7 +534,7 @@ namespace Gevjon {
                         }
                     }
                     string remote_data_ver_str = HttpGet(DATA_VER_URL).Replace("\"", "");
-                    string locale_data_ver_str = config.get("dataVer","0000");
+                    string locale_data_ver_str = config.get("dataVer");
                     if (!locale_data_ver_str.Equals(remote_data_ver_str)) {
                         if (MessageBox.Show("本地卡片数据与服务器不一致\n是否更新?", "发现新数据", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes) {
                             using (var client = new System.Net.WebClient()) {
@@ -513,8 +543,8 @@ namespace Gevjon {
                                     foreach (ZipArchiveEntry entry in zipArchive.Entries) {
                                         entry.ExtractToFile(entry.Name, true);
                                     }
+                                    config.set("dataVer", remote_data_ver_str);
                                 }
-                                config.set("dataVer", remote_data_ver_str);
                                 File.Delete("cards.zip");
                                 db.reload();
                             }

@@ -20,21 +20,15 @@
 
 #### 下载方式
 
-本项目使用Github Actions编译发布,构建完成后会自动发布到Release与[gh-pages](https://github.com/RyoLee/Gevjon/tree/gh-pages)分支,并更新jsDeliver缓存
+本项目使用Github Actions编译发布,构建完成后会自动发布到Release与[gh-pages](https://github.com/RyoLee/Gevjon/tree/gh-pages)分支
 
-以下4个链接正常情况下内容均一致,请在下载后检查校验和是否一致,压缩包SHA256见Release页
+以下2个链接正常情况下内容均一致,请在下载后检查校验和是否一致,压缩包SHA256见Release页
 
 - [Release-Latest](https://github.com/RyoLee/Gevjon/releases/latest)
 
 - [GH-Pages](https://github.com/RyoLee/Gevjon/raw/gh-pages/Gevjon.7z)
-
-- [GH-Pages-CDN-JSD*](https://cdn.jsdelivr.net/gh/RyoLee/Gevjon@gh-pages/Gevjon.7z)
-
-- [GH-Pages-CDN-CF**](https://raw.githubusercontents.com/RyoLee/Gevjon/gh-pages/Gevjon.7z)
     
-    *\* jsDelivr CDN加速缓存版本,发布更新时会尝试通知更新缓存,一般与上方两个链接内容一致,但少数情况下偶尔可能被墙*
-
-    *\*\* Cloudflare CDN加速缓存版本,可能会存在更新延迟问题,仅建议其他3种方式均无法下载时使用*
+    *\* 因镜像站服务条款限制和不可抗力影响,不再提供镜像下载链接,请访问github速度困难/异常地区自行百度/google如steam++等方式加速下载*
 
 #### 控制器
 
