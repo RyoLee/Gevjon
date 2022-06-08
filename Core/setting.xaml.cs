@@ -26,11 +26,37 @@ using System.Windows;
 
 namespace Gevjon {
     public partial class Setting : Window {
-        public Setting() {
+        private MainWindow mainWindow;
+        public Setting(MainWindow window) {
+            this.mainWindow = window;
+            Top = mainWindow.Top;
+            Left = mainWindow.Left;
+            InitializeComponent();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
+            UpdateCheckBox.IsChecked = "1".Equals(mainWindow.config.get("autoUpdate"));
+            PipeServerCheckBox.IsChecked = "1".Equals(mainWindow.config.get("pipeServer"));
+            OnTopCheckBox.IsChecked = "1".Equals(mainWindow.config.get("onTop"));
+            AutoScrollCheckBox.IsChecked = "1".Equals(mainWindow.config.get("autoScroll"));
+            AlphaSlider.Value = float.Parse(mainWindow.config.get("alpha")) * 100;
+        }
 
+        private void SaveButton_Click(object sender, RoutedEventArgs e) {
+            mainWindow.config.set("autoUpdate", UpdateCheckBox.IsChecked == false ? "0" : "1");
+            mainWindow.config.set("onTop", OnTopCheckBox.IsChecked == false ? "0" : "1");
+            mainWindow.config.set("pipeServer", PipeServerCheckBox.IsChecked == false ? "0" : "1");
+            mainWindow.config.set("autoScroll", AutoScrollCheckBox.IsChecked == false ? "0" : "1");
+            mainWindow.config.set("alpha", (AlphaSlider.Value / 100).ToString());
+            e.Handled = true;
+            this.Close();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+            this.Hide();
+            mainWindow.Show();
+            mainWindow.reload();
+            mainWindow.Focus();
         }
     }
 }

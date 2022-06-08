@@ -25,28 +25,25 @@
         <!-- Switch Grid-->
         <Grid Grid.Row="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="30" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="30"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="30"/>
+                <ColumnDefinition Width="30"/>
                 <ColumnDefinition Width="30"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="MoveButton" Content="⦻" ToolTip="左键移动窗口,右键切换收起/展开" Margin="5" Grid.Column="0" PreviewMouseRightButtonDown="MoveButton_RightMouseDown" PreviewMouseLeftButtonDown="MoveButton_LeftMouseDown"/>
-            <CheckBox x:Name="OnTopCheckBox" Content="置顶" ToolTip="窗口始终显示在最上层"  Checked="OnTopCheckBox_Checked" Unchecked="OnTopCheckBox_Unchecked" Grid.Column="1" Margin="5" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
-            <CheckBox x:Name="UpdateCheckBox"  Content="更新" ToolTip="启动时检查更新" Checked="UpdateCheckBox_Checked" Unchecked="UpdateCheckBox_Unchecked"  Margin="5" Grid.Column="2" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
-            <CheckBox x:Name="PipeServerCheckBox" Content="服务" ToolTip="监听服务,开启后接受其他联动工具控制显示内容"  Checked="PipeServerCheckBox_Checked" Unchecked="PipeServerCheckBox_Unchecked" Margin="5" Grid.Column="3" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
-            <CheckBox x:Name="LightModeCheckBox" Content="轻量" IsEnabled="False" ToolTip="纯显示模式,简化UI,仅服务模式有效"  Checked="LightModeCheckBox_Checked" Unchecked="LightModeCheckBox_Unchecked" Margin="5" Grid.Column="4" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
-            <Button x:Name="ExitButton" Content="X" ToolTip="退出" Margin="5" Grid.Column="5" Click="ExitButton_Click"/>
+            <Button x:Name="MoveButton"  Content="Gevjon" ToolTip="拖动窗口" VerticalAlignment="Center" Margin="0" Height="30" Grid.Column="0" BorderThickness="0" BorderBrush="{x:Null}" PreviewMouseLeftButtonDown="MoveButton_LeftMouseDown"/>
+            <Button x:Name="ResizeButton" Content="⇱" ToolTip="切换悬浮窗展开" Margin="5" Grid.Column="1" Click="ResizeButton_Click" />
+            <Button x:Name="LightModeButton" Content="↕" ToolTip="切换搜索展开"  Margin="5" Grid.Column="2" Click="LightModeButton_Click"/>
+            <Button x:Name="SettingButton" Content="S" ToolTip="设置"  Margin="5" Grid.Column="3" Click="SettingButton_Click"/>
+            <Button x:Name="ExitButton" Content="X" ToolTip="退出" Margin="5" Grid.Column="4" Click="ExitButton_Click"/>
             <Border Grid.Column="0" BorderBrush="#c9c9c9" BorderThickness="1" />
             <Border Grid.Column="1" BorderBrush="#c9c9c9" BorderThickness="1" />
             <Border Grid.Column="2" BorderBrush="#c9c9c9" BorderThickness="1" />
             <Border Grid.Column="3" BorderBrush="#c9c9c9" BorderThickness="1" />
             <Border Grid.Column="4" BorderBrush="#c9c9c9" BorderThickness="1" />
-            <Border Grid.Column="5" BorderBrush="#c9c9c9" BorderThickness="1" />
         </Grid>
         <!-- Search Grid-->
         <Grid x:Name="ControlGrid"  Grid.Row="1">

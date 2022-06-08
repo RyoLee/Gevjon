@@ -37,124 +37,125 @@ namespace Gevjon {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+
+    public class Config {
+        private string path;
+        private volatile Dictionary<string, string> datas;
+        public string get(string k) {
+            load();
+            return datas[k];
+        }
+        public void set(string k, string v) {
+            datas[k] = v;
+            save();
+        }
+        public Config(String path) {
+            this.path = path;
+            this.datas = init();
+            load();
+            save();
+        }
+        private void load() {
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            serializer.MaxJsonLength = 1024 * 1024 * 16;
+            if (File.Exists(path)) {
+                using (StreamReader file = File.OpenText(path)) {
+                    string jsonStr = file.ReadToEnd();
+                    var _datas = serializer.Deserialize<Dictionary<string, string>>(jsonStr);
+                    foreach (var data in _datas) {
+                        datas[data.Key] = data.Value;
+                    }
+                }
+            }
+        }
+        private Dictionary<string, string> init() {
+            Dictionary<string, string> res = new Dictionary<string, string>();
+            var defaultCfg = new {
+                autoUpdate = "1",
+                alpha = "0.5",
+                left = "0",
+                top = "0",
+                width = "380",
+                height = "400",
+                title = "masterduel",
+                onTop = "1",
+                pipeServer = "1",
+                lightMode = "0",
+                currentFontName = "Microsoft YaHei UI",
+                currentFontSize = "16",
+                verURL = "https://ghproxy.com/https://raw.githubusercontent.com/RyoLee/Gevjon/gh-pages/version.txt",
+                dlURL = "https://github.com/RyoLee/Gevjon/releases/latest",
+                dataVerURL = "https://ygocdb.com/api/v0/cards.zip.md5",
+                dataDlURL = "https://ygocdb.com/api/v0/cards.zip",
+                dataVer = "0000",
+                autoScroll = "1"
+            };
+            foreach (var prop in defaultCfg.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) {
+                res[prop.Name] = prop.GetValue(defaultCfg, null).ToString();
+            }
+            return res;
+        }
+        private void save() {
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            serializer.MaxJsonLength = 1024 * 1024 * 16;
+            string jsonStr = FormatOutput(serializer.Serialize(datas));
+            using (FileStream fs = new FileStream(path, FileMode.Create)) {
+                using (StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8)) {
+                    sw.WriteLine(jsonStr);
+                }
+            }
+        }
+        private static string FormatOutput(string jsonString) {
+            var stringBuilder = new System.Text.StringBuilder();
+
+            bool escaping = false;
+            bool inQuotes = false;
+            int indentation = 0;
+
+            foreach (char character in jsonString) {
+                if (escaping) {
+                    escaping = false;
+                    stringBuilder.Append(character);
+                } else {
+                    if (character == '\\') {
+                        escaping = true;
+                        stringBuilder.Append(character);
+                    } else if (character == '\"') {
+                        inQuotes = !inQuotes;
+                        stringBuilder.Append(character);
+                    } else if (!inQuotes) {
+                        if (character == ',') {
+                            stringBuilder.Append(character);
+                            stringBuilder.Append("\r\n");
+                            stringBuilder.Append('\t', indentation);
+                        } else if (character == '[' || character == '{') {
+                            stringBuilder.Append(character);
+                            stringBuilder.Append("\r\n");
+                            stringBuilder.Append('\t', ++indentation);
+                        } else if (character == ']' || character == '}') {
+                            stringBuilder.Append("\r\n");
+                            stringBuilder.Append('\t', --indentation);
+                            stringBuilder.Append(character);
+                        } else if (character == ':') {
+                            stringBuilder.Append(character);
+                            stringBuilder.Append(' ');
+                        } else if (!Char.IsWhiteSpace(character)) {
+                            stringBuilder.Append(character);
+                        }
+                    } else {
+                        stringBuilder.Append(character);
+                    }
+                }
+            }
+            return stringBuilder.ToString();
+        }
+    }
     public partial class MainWindow : Window {
         static string dbFile = "cards.json";
         static string cfgFile = "config.json";
         private YGOdb db;
-        private Config config;
+        public Config config;
         private PipeServer pipeServer;
-        class Config {
-            private string path;
-            private volatile Dictionary<string, string> datas;
-            public string get(string k) {
-                load();
-                return datas[k];
-            }
-            public void set(string k, string v) {
-                datas[k] = v;
-                save();
-            }
-            public Config(String path) {
-                this.path = path;
-                this.datas = init();
-                load();
-                save();
-            }
-            private void load() {
-                JavaScriptSerializer serializer = new JavaScriptSerializer();
-                serializer.MaxJsonLength = 1024 * 1024 * 16;
-                if (File.Exists(path)) {
-                    using (StreamReader file = File.OpenText(path)) {
-                        string jsonStr = file.ReadToEnd();
-                        var _datas = serializer.Deserialize<Dictionary<string, string>>(jsonStr);
-                        foreach (var data in _datas) {
-                            datas[data.Key] = data.Value;
-                        }
-                    }
-                }
-            }
-            private Dictionary<string, string> init() {
-                Dictionary<string, string> res = new Dictionary<string, string>();
-                var defaultCfg = new {
-                    autoUpdate = "1",
-                    alpha = "0.5",
-                    left = "0",
-                    top = "0",
-                    width = "380",
-                    height = "400",
-                    title = "masterduel",
-                    onTop = "1",
-                    pipeServer = "1",
-                    lightMode = "0",
-                    currentFontName = "Microsoft YaHei UI",
-                    currentFontSize = "16",
-                    verURL = "https://ghproxy.com/https://raw.githubusercontent.com/RyoLee/Gevjon/gh-pages/version.txt",
-                    dlURL = "https://github.com/RyoLee/Gevjon/releases/latest",
-                    dataVerURL = "https://ygocdb.com/api/v0/cards.zip.md5",
-                    dataDlURL = "https://ygocdb.com/api/v0/cards.zip",
-                    dataVer = "0000"
-                };
-                foreach (var prop in defaultCfg.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) {
-                    res[prop.Name] = prop.GetValue(defaultCfg, null).ToString();
-                }
-                return res;
-            }
-            private void save() {
-                JavaScriptSerializer serializer = new JavaScriptSerializer();
-                serializer.MaxJsonLength = 1024 * 1024 * 16;
-                string jsonStr = FormatOutput(serializer.Serialize(datas));
-                using (FileStream fs = new FileStream(path, FileMode.Create)) {
-                    using (StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8)) {
-                        sw.WriteLine(jsonStr);
-                    }
-                }
-            }
-            private static string FormatOutput(string jsonString) {
-                var stringBuilder = new System.Text.StringBuilder();
-
-                bool escaping = false;
-                bool inQuotes = false;
-                int indentation = 0;
-
-                foreach (char character in jsonString) {
-                    if (escaping) {
-                        escaping = false;
-                        stringBuilder.Append(character);
-                    } else {
-                        if (character == '\\') {
-                            escaping = true;
-                            stringBuilder.Append(character);
-                        } else if (character == '\"') {
-                            inQuotes = !inQuotes;
-                            stringBuilder.Append(character);
-                        } else if (!inQuotes) {
-                            if (character == ',') {
-                                stringBuilder.Append(character);
-                                stringBuilder.Append("\r\n");
-                                stringBuilder.Append('\t', indentation);
-                            } else if (character == '[' || character == '{') {
-                                stringBuilder.Append(character);
-                                stringBuilder.Append("\r\n");
-                                stringBuilder.Append('\t', ++indentation);
-                            } else if (character == ']' || character == '}') {
-                                stringBuilder.Append("\r\n");
-                                stringBuilder.Append('\t', --indentation);
-                                stringBuilder.Append(character);
-                            } else if (character == ':') {
-                                stringBuilder.Append(character);
-                                stringBuilder.Append(' ');
-                            } else if (!Char.IsWhiteSpace(character)) {
-                                stringBuilder.Append(character);
-                            }
-                        } else {
-                            stringBuilder.Append(character);
-                        }
-                    }
-                }
-
-                return stringBuilder.ToString();
-            }
-        }
         class PipeServer {
             private MainWindow mainWindow;
             private bool stopFlag = true;
@@ -190,20 +191,35 @@ namespace Gevjon {
                                 string mode = json["mode"].ToString();
                                 if (Enum.IsDefined(typeof(MODES), mode)) {
                                     switch ((MODES)Enum.Parse(typeof(MODES), mode, true)) {
-                                        case MODES.id:
+                                        case MODES.exact:
                                             mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() => {
-                                                mainWindow.CardSearchBox.Text = json["id"].ToString();
+                                                if ("1".Equals(mainWindow.config.get("autoScroll"))) {
+                                                    if ("⇲".Equals(mainWindow.ResizeButton.Content)) {
+                                                        mainWindow.ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                                    }
+                                                }
+                                                mainWindow.CardSearchBox.Text = json["text"].ToString();
                                                 mainWindow.Find(true);
                                             }));
                                             break;
-                                        case MODES.name:
+                                        case MODES.fuzzy:
                                             mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() => {
-                                                mainWindow.CardSearchBox.Text = json["name"].ToString();
+                                                if ("1".Equals(mainWindow.config.get("autoScroll"))) {
+                                                    if ("⇲".Equals(mainWindow.ResizeButton.Content)) {
+                                                        mainWindow.ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                                    }
+                                                }
+                                                mainWindow.CardSearchBox.Text = json["text"].ToString();
                                                 mainWindow.Find(false);
                                             }));
                                             break;
                                         case MODES.issued:
                                             mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() => {
+                                                if ("1".Equals(mainWindow.config.get("autoScroll"))) {
+                                                    if ("⇲".Equals(mainWindow.ResizeButton.Content)) {
+                                                        mainWindow.ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                                    }
+                                                }
                                                 string data = json["data"].ToString();
                                                 Card card = serializer.Deserialize<Card>(data);
                                                 List<Card> cards = new List<Card>() { };
@@ -345,46 +361,57 @@ namespace Gevjon {
         public MainWindow() {
             config = new Config(cfgFile);
             db = new YGOdb(dbFile);
+            Left = int.Parse(config.get("left"));
+            Top = int.Parse(config.get("top"));
             InitializeComponent();
         }
         public delegate void DelegateMessage(string Reply);
 
         enum MODES {
-            id, name, issued
+            exact, fuzzy, issued
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             InitBackground();
             pipeServer = new PipeServer(this);
-            UpdateCheckBox.IsChecked = "1".Equals(config.get("autoUpdate"));
             Background.Opacity = float.Parse(config.get("alpha"));
-
-            Left = int.Parse(config.get("left"));
-            Top = int.Parse(config.get("top"));
             Width = int.Parse(config.get("width"));
             Height = int.Parse(config.get("height"));
+            MoveButton.Content = Title + "-" + AssemblyInfo.VERSION;
             CardDescBox.FontFamily = new System.Windows.Media.FontFamily(config.get("currentFontName"));
             CardDescBox.FontSize = int.Parse(config.get("currentFontSize"));
-            PipeServerCheckBox.IsChecked = "1".Equals(config.get("pipeServer"));
-            LightModeCheckBox.IsChecked = "1".Equals(config.get("lightMode"));
-            OnTopCheckBox.IsChecked = "1".Equals(config.get("onTop"));
-            if (OnTopCheckBox.IsChecked ?? false) {
-                Activate();
+            reload();
+            e.Handled = true;
+        }
+        public void reload() {
+            if ("1".Equals(config.get("lightMode"))) {
+                ControlGrid.Visibility = Visibility.Collapsed;
+            } else {
+                ControlGrid.Visibility = Visibility.Visible;
+            }
+            if ("1".Equals(config.get("onTop"))) {
                 Topmost = false;
                 Topmost = true;
-                Focus();
+            } else {
+                Topmost = false;
             }
-            e.Handled = true;
+            if ("1".Equals(config.get("autoUpdate"))) {
+                CheckUpdate();
+            }
+            if ("1".Equals(config.get("pipeServer"))) { //重复start不影响
+                pipeServer.Start();
+            } else {
+                pipeServer.Stop();
+            }
         }
         private void InitBackground() {
             Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 255, 255));
+            SettingButton.Background = Background;
             MoveButton.Background = Background;
-            OnTopCheckBox.Background = Background;
-            PipeServerCheckBox.Background = Background;
-            LightModeCheckBox.Background = Background;
+            ResizeButton.Background = Background;
+            LightModeButton.Background = Background;
             ExitButton.Background = Background;
             CardSearchBox.Background = Background;
-            UpdateCheckBox.Background = Background;
             CardComboBox.Background = Background;
             CardDescBox.Background = Background;
         }
@@ -428,47 +455,6 @@ namespace Gevjon {
             }
         }
 
-        private void OnTopCheckBox_Checked(object sender, RoutedEventArgs e) {
-            config.set("onTop", "1");
-            Topmost = false;
-            Topmost = true;
-            e.Handled = true;
-        }
-
-        private void OnTopCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            config.set("onTop", "0");
-            Topmost = false;
-            e.Handled = true;
-        }
-
-        private void PipeServerCheckBox_Checked(object sender, RoutedEventArgs e) {
-            pipeServer.Start();
-            LightModeCheckBox.IsEnabled = true;
-            config.set("pipeServer", "1");
-            e.Handled = true;
-        }
-
-        private void PipeServerCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            pipeServer.Stop();
-            LightModeCheckBox.IsChecked = false;
-            LightModeCheckBox.IsEnabled = false;
-            config.set("pipeServer", "0");
-            e.Handled = true;
-        }
-
-        private void LightModeCheckBox_Checked(object sender, RoutedEventArgs e) {
-            if (PipeServerCheckBox.IsChecked ?? false) {
-                ControlGrid.Visibility = Visibility.Collapsed;
-                config.set("lightMode", "1");
-            }
-            e.Handled = true;
-        }
-
-        private void LightModeCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            ControlGrid.Visibility = Visibility.Visible;
-            config.set("lightMode", "0");
-            e.Handled = true;
-        }
 
         private void Window_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e) {
             GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Background.Opacity = 1; }));
@@ -484,6 +470,22 @@ namespace Gevjon {
             Application.Current.Shutdown();
             e.Handled = true;
         }
+        private void ResizeButton_Click(object sender, RoutedEventArgs e) {
+            if ("⇱".Equals(ResizeButton.Content)) {
+                config.set("width", GevjonMainWindow.RestoreBounds.Width.ToString());
+                config.set("height", GevjonMainWindow.RestoreBounds.Height.ToString());
+                ResizeButton.Content = "⇲";
+                GevjonMainWindow.ResizeMode = ResizeMode.NoResize;
+                Width = 30;
+                Height = 30;
+            } else {
+                ResizeButton.Content = "⇱";
+                GevjonMainWindow.ResizeMode = ResizeMode.CanResizeWithGrip;
+                Width = int.Parse(config.get("width"));
+                Height = int.Parse(config.get("height"));
+            }
+            e.Handled = true;
+        }
 
         private void MoveButton_LeftMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left) {
@@ -491,70 +493,56 @@ namespace Gevjon {
                 e.Handled = true;
             }
         }
-
-        private void MoveButton_RightMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
-            if (e.ChangedButton == System.Windows.Input.MouseButton.Right) {
-                if (Width != 30) {
-                    Width = 30;
-                    Height = 30;
-                } else {
-                    Width = int.Parse(config.get("width"));
-                    Height = int.Parse(config.get("height"));
-                }
-                e.Handled = true;
+        private void LightModeButton_Click(object sender, RoutedEventArgs e) {
+            if ("1".Equals(config.get("lightMode"))) {
+                config.set("lightMode", "0");
+            } else {
+                config.set("lightMode", "1");
             }
-        }
-
-        private void UpdateCheckBox_Checked(object sender, RoutedEventArgs e) {
-            config.set("autoUpdate", "1");
-            CheckUpdate();
+            reload();
             e.Handled = true;
         }
+        private async Task CheckUpdate() {
+            var tak = Task.Run(() => {
+                if (System.Threading.Monitor.TryEnter(this)) {
+                    try {
+                        string VER_URL = config.get("verURL");
+                        string REL_URL = config.get("dlURL");
+                        string DATA_VER_URL = config.get("dataVerURL");
+                        string DATA_REL_URL = config.get("dataDlURL");
+                        string remote_ver_str = HttpGet(VER_URL);
+                        string locale_ver_str = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).ProductVersion;
 
-        private void UpdateCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            config.set("autoUpdate", "0");
-            e.Handled = true;
-        }
-        //private async Task CheckUpdate() {
-        private void CheckUpdate() {
-            if (System.Threading.Monitor.TryEnter(UpdateCheckBox)) {
-                try {
-                    string VER_URL = config.get("verURL");
-                    string REL_URL = config.get("dlURL");
-                    string DATA_VER_URL = config.get("dataVerURL");
-                    string DATA_REL_URL = config.get("dataDlURL");
-                    string remote_ver_str = HttpGet(VER_URL);
-                    string locale_ver_str = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).ProductVersion;
-
-                    var remote_ver = new Version(remote_ver_str);
-                    var locale_ver = new Version(locale_ver_str);
-                    if (remote_ver.CompareTo(locale_ver) == 1) {
-                        if (MessageBox.Show("本地:\t" + locale_ver_str + "\n远端:\t" + remote_ver_str + "\n是否更新?", "发现新版本", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes) {
-                            System.Diagnostics.Process.Start(REL_URL);
+                        var remote_ver = new Version(remote_ver_str);
+                        var locale_ver = new Version(locale_ver_str);
+                        if (remote_ver.CompareTo(locale_ver) == 1) {
+                            if (MessageBox.Show("本地:\t" + locale_ver_str + "\n远端:\t" + remote_ver_str + "\n是否更新?", "发现新版本", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes) {
+                                System.Diagnostics.Process.Start(REL_URL);
+                            }
                         }
-                    }
-                    string remote_data_ver_str = HttpGet(DATA_VER_URL).Replace("\"", "");
-                    string locale_data_ver_str = config.get("dataVer");
-                    if (!locale_data_ver_str.Equals(remote_data_ver_str)) {
-                        if (MessageBox.Show("本地卡片数据与服务器不一致\n是否更新?", "发现新数据", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes) {
-                            using (var client = new System.Net.WebClient()) {
-                                client.DownloadFile(DATA_REL_URL, "cards.zip");
-                                using (var zipArchive = ZipFile.OpenRead("cards.zip")) {
-                                    foreach (ZipArchiveEntry entry in zipArchive.Entries) {
-                                        entry.ExtractToFile(entry.Name, true);
+                        string remote_data_ver_str = HttpGet(DATA_VER_URL).Replace("\"", "");
+                        string locale_data_ver_str = config.get("dataVer");
+                        if (!locale_data_ver_str.Equals(remote_data_ver_str)) {
+                            if (MessageBox.Show("本地卡片数据与服务器不一致\n是否更新?", "发现新数据", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes) {
+                                using (var client = new System.Net.WebClient()) {
+                                    client.DownloadFile(DATA_REL_URL, "cards.zip");
+                                    using (var zipArchive = ZipFile.OpenRead("cards.zip")) {
+                                        foreach (ZipArchiveEntry entry in zipArchive.Entries) {
+                                            entry.ExtractToFile(entry.Name, true);
+                                        }
+                                        config.set("dataVer", remote_data_ver_str);
                                     }
-                                    config.set("dataVer", remote_data_ver_str);
+                                    File.Delete("cards.zip");
+                                    db.reload();
                                 }
-                                File.Delete("cards.zip");
-                                db.reload();
                             }
                         }
                     }
+                    finally {
+                        System.Threading.Monitor.Exit(this);
+                    }
                 }
-                finally {
-                    System.Threading.Monitor.Exit(UpdateCheckBox);
-                }
-            }
+            });
         }
         private string HttpGet(string url) {
             using (System.Net.Http.HttpClient client = new System.Net.Http.HttpClient()) {
@@ -572,6 +560,13 @@ namespace Gevjon {
             config.set("top", rect.Top.ToString());
             config.set("width", rect.Width.ToString());
             config.set("height", rect.Height.ToString());
+        }
+
+        private void SettingButton_Click(object sender, RoutedEventArgs e) {
+            var form = new Setting(this);
+            this.Hide();
+            form.Show();
+            form.Focus();
         }
     }
 }

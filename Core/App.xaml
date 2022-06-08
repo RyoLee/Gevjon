@@ -30,6 +30,7 @@
         <Style TargetType="ComboBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 </Application.Resources>
 </Application>
