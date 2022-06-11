@@ -31,10 +31,14 @@ namespace Gevjon {
             this.mainWindow = window;
             Top = mainWindow.Top;
             Left = mainWindow.Left;
+            Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 255, 255));
             InitializeComponent();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
+            ExitButton.Background = Background;
+            MoveButton.Background = Background;
+            SaveButton.Background = Background;
             UpdateCheckBox.IsChecked = "1".Equals(mainWindow.config.get("autoUpdate"));
             PipeServerCheckBox.IsChecked = "1".Equals(mainWindow.config.get("pipeServer"));
             OnTopCheckBox.IsChecked = "1".Equals(mainWindow.config.get("onTop"));
@@ -57,6 +61,20 @@ namespace Gevjon {
             mainWindow.Show();
             mainWindow.reload();
             mainWindow.Focus();
+        }
+        private void MoveButton_LeftMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Left) {
+                this.DragMove();
+                e.Handled = true;
+            }
+        }
+        private void ExitButton_Click(object sender, RoutedEventArgs e) {
+            this.Close();
+            e.Handled = true;
+        }
+
+        private void AlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            this.Background.Opacity = AlphaSlider.Value/100;
         }
     }
 }
