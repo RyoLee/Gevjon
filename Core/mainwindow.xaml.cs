@@ -412,7 +412,7 @@ namespace Gevjon {
             LightModeButton.Background = Background;
             ExitButton.Background = Background;
             CardSearchBox.Background = Background;
-            CardComboBox.Background = Background;
+            LockButton.Background = Background;
             CardDescBox.Background = Background;
         }
 
@@ -442,6 +442,7 @@ namespace Gevjon {
                 CardComboBox.IsEnabled = true;
                 CardComboBox.ItemsSource = cards;
                 CardComboBox.SelectedIndex = 0;
+                CardComboBox.DisplayMemberPath = "ItemName";
                 CardComboBox.Items.Refresh();
             } else {
                 CardComboBox.IsEnabled = false;
@@ -462,7 +463,19 @@ namespace Gevjon {
         }
 
         private void Window_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) {
-            GevjonMainWindow.Dispatcher.Invoke(new Action(() => { this.Background.Opacity = float.Parse(config.get("alpha")); }));
+            GevjonMainWindow.Dispatcher.Invoke(new Action(() => {
+                this.Background.Opacity = float.Parse(config.get("alpha"));
+            }));
+            e.Handled = true;
+        }
+        private void LockButton_Click(object sender, RoutedEventArgs e) {
+            if ("L".Equals(LockButton.Content)) {
+                GevjonMainWindow.ResizeMode = ResizeMode.CanResizeWithGrip;
+                LockButton.Content = "U";
+            } else {
+                GevjonMainWindow.ResizeMode = ResizeMode.NoResize;
+                LockButton.Content = "L";
+            }
             e.Handled = true;
         }
 
@@ -474,15 +487,17 @@ namespace Gevjon {
             if ("⇱".Equals(ResizeButton.Content)) {
                 config.set("width", GevjonMainWindow.RestoreBounds.Width.ToString());
                 config.set("height", GevjonMainWindow.RestoreBounds.Height.ToString());
-                ResizeButton.Content = "⇲";
                 GevjonMainWindow.ResizeMode = ResizeMode.NoResize;
+                LockButton.Content = "L";
                 Width = 30;
                 Height = 30;
+                ResizeButton.Content = "⇲";
             } else {
-                ResizeButton.Content = "⇱";
-                GevjonMainWindow.ResizeMode = ResizeMode.CanResizeWithGrip;
                 Width = int.Parse(config.get("width"));
                 Height = int.Parse(config.get("height"));
+                GevjonMainWindow.ResizeMode = ResizeMode.NoResize;
+                LockButton.Content = "L";
+                ResizeButton.Content = "⇱";
             }
             e.Handled = true;
         }
