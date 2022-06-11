@@ -198,7 +198,7 @@ namespace Gevjon {
                                                         mainWindow.ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                                                     }
                                                 }
-                                                mainWindow.CardSearchBox.Text = json["text"].ToString();
+                                                mainWindow.CardSearchBox.Text = json["data"].ToString();
                                                 mainWindow.Find(true);
                                             }));
                                             break;
@@ -209,7 +209,7 @@ namespace Gevjon {
                                                         mainWindow.ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                                                     }
                                                 }
-                                                mainWindow.CardSearchBox.Text = json["text"].ToString();
+                                                mainWindow.CardSearchBox.Text = json["data"].ToString();
                                                 mainWindow.Find(false);
                                             }));
                                             break;
