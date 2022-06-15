@@ -71,7 +71,7 @@ namespace Gevjon {
         private Dictionary<string, string> init() {
             Dictionary<string, string> res = new Dictionary<string, string>();
             var defaultCfg = new {
-                version = AssemblyInfo.VERSION;
+                version = AssemblyInfo.VERSION,
                 autoUpdate = "1",
                 alpha = "0.5",
                 left = "0",
