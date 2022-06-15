@@ -71,6 +71,7 @@ namespace Gevjon {
         private Dictionary<string, string> init() {
             Dictionary<string, string> res = new Dictionary<string, string>();
             var defaultCfg = new {
+                version = AssemblyInfo.VERSION;
                 autoUpdate = "1",
                 alpha = "0.5",
                 left = "0",
@@ -360,6 +361,12 @@ namespace Gevjon {
 
         public MainWindow() {
             config = new Config(cfgFile);
+            var cfg_ver = new Version(config.get("version"));
+            var cur_ver = new Version(AssemblyInfo.VERSION);
+            if (cur_ver.CompareTo(cfg_ver) == 1) {
+                // update from old version
+                config.set("dataVer","0000");
+            }
             db = new YGOdb(dbFile);
             Left = int.Parse(config.get("left"));
             Top = int.Parse(config.get("top"));
@@ -526,7 +533,7 @@ namespace Gevjon {
                         string DATA_VER_URL = config.get("dataVerURL");
                         string DATA_REL_URL = config.get("dataDlURL");
                         string remote_ver_str = HttpGet(VER_URL);
-                        string locale_ver_str = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).ProductVersion;
+                        string locale_ver_str = AssemblyInfo.VERSION;
 
                         var remote_ver = new Version(remote_ver_str);
                         var locale_ver = new Version(locale_ver_str);
@@ -570,6 +577,9 @@ namespace Gevjon {
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+            if ("⇲".Equals(mainWindow.ResizeButton.Content)) {
+                return;
+            }
             Rect rect = this.RestoreBounds;
             config.set("left", rect.Left.ToString());
             config.set("top", rect.Top.ToString());
