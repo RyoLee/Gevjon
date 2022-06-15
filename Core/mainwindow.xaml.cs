@@ -577,7 +577,7 @@ namespace Gevjon {
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            if ("⇲".Equals(mainWindow.ResizeButton.Content)) {
+            if ("⇲".Equals(ResizeButton.Content)) {
                 return;
             }
             Rect rect = this.RestoreBounds;
