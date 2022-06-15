@@ -42,5 +42,5 @@ using System.Windows;
 [assembly: AssemblyFileVersion(AssemblyInfo.VERSION)]
 [assembly: AssemblyInformationalVersion(AssemblyInfo.VERSION)]
 class AssemblyInfo {
-    public const string VERSION = "1.3.3";
+    public const string VERSION = "1.3.4";
 }
