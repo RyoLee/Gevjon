@@ -71,7 +71,7 @@ namespace Gevjon {
         private Dictionary<string, string> init() {
             Dictionary<string, string> res = new Dictionary<string, string>();
             var defaultCfg = new {
-                version = AssemblyInfo.VERSION,
+                version = "1.0.0",
                 autoUpdate = "1",
                 alpha = "0.5",
                 left = "0",
@@ -365,7 +365,8 @@ namespace Gevjon {
             var cur_ver = new Version(AssemblyInfo.VERSION);
             if (cur_ver.CompareTo(cfg_ver) == 1) {
                 // update from old version
-                config.set("dataVer","0000");
+                config.set("dataVer", "0000");
+                config.set("version", AssemblyInfo.VERSION)
             }
             db = new YGOdb(dbFile);
             Left = int.Parse(config.get("left"));
