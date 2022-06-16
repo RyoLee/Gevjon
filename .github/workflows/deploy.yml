@@ -28,8 +28,9 @@ jobs:
         Remove-Item public -Recurse -ErrorAction Ignore
         mkdir public
         msbuild /t:Restore /p:Configuration=Release
-        msbuild /m /p:Configuration=Release
-        cd ./Core/bin/Release
+        msbuild /m /p:Configuration=Release /p:DebugSymbols=false /p:DebugType=None
+        cp ./README.md ./Core/bin/Release/net6.0-windows/
+        cd ./Core/bin/Release/net6.0-windows
         (get-item Gevjon.exe).VersionInfo.ProductVersion > ../../../public/version.txt
         7z a Gevjon.7z *
         mv ./Gevjon.7z ../../../public/
@@ -45,7 +46,7 @@ jobs:
 
   release:
     needs: build
-    if: github.ref == 'refs/heads/master'
+    if: ${{github.event_name != 'workflow_dispatch' && github.ref == 'refs/heads/master'}}
     runs-on: ubuntu-latest
     steps:
     - name: Download artifact

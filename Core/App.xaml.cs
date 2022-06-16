@@ -24,7 +24,7 @@
 
 using System.Windows;
 
-namespace Gevjon {
+namespace Core {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>

@@ -22,342 +22,30 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
+using PlugIn;
 using System;
-using System.Windows;
-using System.Windows.Controls;
 using System.Collections.Generic;
-using System.Configuration;
-using System.IO.Pipes;
-using System.Web.Script.Serialization;
-using System.Threading.Tasks;
 using System.IO;
 using System.IO.Compression;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 
-namespace Gevjon {
+namespace Core {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
 
-    public class Config {
-        private string path;
-        private volatile Dictionary<string, string> datas;
-        public string get(string k) {
-            load();
-            return datas[k];
-        }
-        public void set(string k, string v) {
-            datas[k] = v;
-            save();
-        }
-        public Config(String path) {
-            this.path = path;
-            this.datas = init();
-            load();
-            save();
-        }
-        private void load() {
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            serializer.MaxJsonLength = 1024 * 1024 * 16;
-            if (File.Exists(path)) {
-                using (StreamReader file = File.OpenText(path)) {
-                    string jsonStr = file.ReadToEnd();
-                    var _datas = serializer.Deserialize<Dictionary<string, string>>(jsonStr);
-                    foreach (var data in _datas) {
-                        datas[data.Key] = data.Value;
-                    }
-                }
-            }
-        }
-        private Dictionary<string, string> init() {
-            Dictionary<string, string> res = new Dictionary<string, string>();
-            var defaultCfg = new {
-                version = "1.0.0",
-                autoUpdate = "1",
-                alpha = "0.5",
-                left = "0",
-                top = "0",
-                width = "380",
-                height = "400",
-                title = "masterduel",
-                onTop = "1",
-                pipeServer = "1",
-                lightMode = "0",
-                currentFontName = "Microsoft YaHei UI",
-                currentFontSize = "16",
-                verURL = "https://ghproxy.com/https://raw.githubusercontent.com/RyoLee/Gevjon/gh-pages/version.txt",
-                dlURL = "https://github.com/RyoLee/Gevjon/releases/latest",
-                dataVerURL = "https://ygocdb.com/api/v0/cards.zip.md5",
-                dataDlURL = "https://ygocdb.com/api/v0/cards.zip",
-                dataVer = "0000",
-                autoScroll = "1"
-            };
-            foreach (var prop in defaultCfg.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) {
-                res[prop.Name] = prop.GetValue(defaultCfg, null).ToString();
-            }
-            return res;
-        }
-        private void save() {
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            serializer.MaxJsonLength = 1024 * 1024 * 16;
-            string jsonStr = FormatOutput(serializer.Serialize(datas));
-            using (FileStream fs = new FileStream(path, FileMode.Create)) {
-                using (StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8)) {
-                    sw.WriteLine(jsonStr);
-                }
-            }
-        }
-        private static string FormatOutput(string jsonString) {
-            var stringBuilder = new System.Text.StringBuilder();
-
-            bool escaping = false;
-            bool inQuotes = false;
-            int indentation = 0;
-
-            foreach (char character in jsonString) {
-                if (escaping) {
-                    escaping = false;
-                    stringBuilder.Append(character);
-                } else {
-                    if (character == '\\') {
-                        escaping = true;
-                        stringBuilder.Append(character);
-                    } else if (character == '\"') {
-                        inQuotes = !inQuotes;
-                        stringBuilder.Append(character);
-                    } else if (!inQuotes) {
-                        if (character == ',') {
-                            stringBuilder.Append(character);
-                            stringBuilder.Append("\r\n");
-                            stringBuilder.Append('\t', indentation);
-                        } else if (character == '[' || character == '{') {
-                            stringBuilder.Append(character);
-                            stringBuilder.Append("\r\n");
-                            stringBuilder.Append('\t', ++indentation);
-                        } else if (character == ']' || character == '}') {
-                            stringBuilder.Append("\r\n");
-                            stringBuilder.Append('\t', --indentation);
-                            stringBuilder.Append(character);
-                        } else if (character == ':') {
-                            stringBuilder.Append(character);
-                            stringBuilder.Append(' ');
-                        } else if (!Char.IsWhiteSpace(character)) {
-                            stringBuilder.Append(character);
-                        }
-                    } else {
-                        stringBuilder.Append(character);
-                    }
-                }
-            }
-            return stringBuilder.ToString();
-        }
+    enum MODES {
+        exact, fuzzy, issued
     }
     public partial class MainWindow : Window {
         static string dbFile = "cards.json";
         static string cfgFile = "config.json";
         private YGOdb db;
         public Config config;
-        private PipeServer pipeServer;
-        class PipeServer {
-            private MainWindow mainWindow;
-            private bool stopFlag = true;
-            public PipeServer(MainWindow mainWindow) {
-                this.mainWindow = mainWindow;
-                Task.Run(() => {
-                    while (true) {
-                        if (stopFlag) {
-                            System.Threading.Thread.Sleep(1000);
-                        } else {
-                            StartPipeServer();
-                        }
-                    }
-                });
-            }
-            private void StartPipeServer() {
-                using (NamedPipeServerStream pipeServer = new NamedPipeServerStream("GevjonCore", PipeDirection.InOut)) {
-                    Console.WriteLine("NamedPipeServer Start.");
-                    Console.Write("Waiting for client connection...");
-                    pipeServer.WaitForConnection();
-                    Console.WriteLine("Client connected.");
-                    try {
-                        using (StreamReader sr = new StreamReader(pipeServer)) {
-                            string temp = "";
-                            string line;
-                            while ((line = sr.ReadLine()) != null) {
-                                temp += line;
-                            }
-                            Console.WriteLine("Received from client: {0}", temp);
-                            try {
-                                JavaScriptSerializer serializer = new JavaScriptSerializer();
-                                Dictionary<string, object> json = (Dictionary<string, object>)serializer.DeserializeObject(temp);
-                                string mode = json["mode"].ToString();
-                                if (Enum.IsDefined(typeof(MODES), mode)) {
-                                    switch ((MODES)Enum.Parse(typeof(MODES), mode, true)) {
-                                        case MODES.exact:
-                                            mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() => {
-                                                if ("1".Equals(mainWindow.config.get("autoScroll"))) {
-                                                    if ("⇲".Equals(mainWindow.ResizeButton.Content)) {
-                                                        mainWindow.ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                                                    }
-                                                }
-                                                mainWindow.CardSearchBox.Text = json["data"].ToString();
-                                                mainWindow.Find(true);
-                                            }));
-                                            break;
-                                        case MODES.fuzzy:
-                                            mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() => {
-                                                if ("1".Equals(mainWindow.config.get("autoScroll"))) {
-                                                    if ("⇲".Equals(mainWindow.ResizeButton.Content)) {
-                                                        mainWindow.ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                                                    }
-                                                }
-                                                mainWindow.CardSearchBox.Text = json["data"].ToString();
-                                                mainWindow.Find(false);
-                                            }));
-                                            break;
-                                        case MODES.issued:
-                                            mainWindow.ControlGrid.Dispatcher.Invoke(new Action(() => {
-                                                if ("1".Equals(mainWindow.config.get("autoScroll"))) {
-                                                    if ("⇲".Equals(mainWindow.ResizeButton.Content)) {
-                                                        mainWindow.ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                                                    }
-                                                }
-                                                string data = json["data"].ToString();
-                                                Card card = serializer.Deserialize<Card>(data);
-                                                List<Card> cards = new List<Card>() { };
-                                                cards.Add(card);
-                                                mainWindow.UpdateCardList(cards);
-                                            }));
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    /*using (System.IO.StreamWriter sw = new System.IO.StreamWriter(pipeServer))
-                                    {
-                                        string msg = "{ \"status\":0}";
-                                        sw.WriteLine(msg);
-                                    }
-                                    */
-                                } else {
-                                    Console.WriteLine("Received unknown mode: {0}", mode);
-                                }
-                            }
-                            catch (Exception ex) {
-                                Console.WriteLine("ERROR: {0}", ex.Message);
-                            }
-                        }
-                    }
-                    catch (IOException e) {
-                        Console.WriteLine("ERROR: {0}", e.Message);
-                    }
-                }
-            }
-
-            internal void Start() {
-                stopFlag = false;
-            }
-
-            internal void Stop() {
-                stopFlag = true;
-            }
-        }
-        public class YGOdb {
-            string path;
-
-            Dictionary<string, Card> datas;
-            public void reload() {
-                datas = new Dictionary<string, Card>();
-                using (StreamReader file = File.OpenText(path)) {
-                    string jsonStr = file.ReadToEnd();
-                    JavaScriptSerializer serializer = new JavaScriptSerializer();
-                    serializer.MaxJsonLength = 1024 * 1024 * 16;
-                    Dictionary<string, Card> cards = serializer.Deserialize<Dictionary<string, Card>>(jsonStr);
-                    foreach (var item in cards) {
-                        Card card = item.Value;
-                        if (card.en_name != null && !"".Equals(card.en_name) && !datas.ContainsKey(card.en_name)) {
-                            datas.Add(card.en_name, card);
-                        }
-                        if (card.cn_name != null && !"".Equals(card.cn_name) && !datas.ContainsKey(card.cn_name)) {
-                            datas.Add(card.cn_name, card);
-                        }
-                        if (card.cnocg_n != null && !"".Equals(card.cnocg_n) && !datas.ContainsKey(card.cnocg_n)) {
-                            datas.Add(card.cnocg_n, card);
-                        }
-                        if (card.jp_name != null && !"".Equals(card.jp_name) && !datas.ContainsKey(card.jp_name)) {
-                            datas.Add(card.jp_name, card);
-                        }
-                        if (card.jp_ruby != null && !"".Equals(card.jp_ruby) && !datas.ContainsKey(card.jp_ruby)) {
-                            datas.Add(card.jp_ruby, card);
-                        }
-                        if (card.cid != 0 && !datas.ContainsKey(card.cid.ToString())) {
-                            datas.Add(card.cid.ToString(), card);
-                        }
-                    }
-                }
-            }
-            public YGOdb(string path) {
-                this.path = path;
-                reload();
-            }
-            public List<Card> Find(string key, bool exact) {
-                List<Card> cards = new List<Card>();
-                if (key == null || "".Equals(key.Trim())) {
-                    return cards;
-                }
-                foreach (var item in datas) {
-                    if (!cards.Contains(item.Value)) {
-                        if (!exact) {
-                            if (item.Key.Contains(key)) {
-                                cards.Add(item.Value);
-                            }
-                        } else {
-                            if (item.Key.Equals(key)) {
-                                cards.Add(item.Value);
-                            }
-                        }
-                    }
-                }
-                return cards;
-            }
-        }
-
-        public class Text {
-            public string types { get; set; }
-            public string pdesc { get; set; }
-            public string desc { get; set; }
-        }
-        public class Card {
-            public int cid { get; set; }
-            public int id { get; set; }
-            public string cn_name { get; set; }
-            public string cnocg_n { get; set; }
-            public string jp_ruby { get; set; }
-            public string jp_name { get; set; }
-            public string en_name { get; set; }
-            public Text text { get; set; }
-            public string ItemName {
-                get { return isEmpty(cn_name) ? isEmpty(cnocg_n) ? isEmpty(jp_name) ? isEmpty(jp_ruby) ? jp_ruby : en_name : jp_name : cnocg_n : cn_name; }
-            }
-            public override string ToString() {
-                string res = reformat(en_name) + reformat(jp_name) + reformat(cn_name) + "\n";
-                res += text.types + "\n\n\n";
-                if (!isEmpty(text.pdesc)) {
-                    res += ("------------------------"
-                    + "\n"
-                    + text.pdesc
-                    + "\n"
-                    + "------------------------"
-                    + "\n\n\n");
-                }
-                res += text.desc;
-                return res;
-            }
-            private bool isEmpty(string str) {
-                return (str == null || "".Equals(str.Trim()));
-            }
-            private string reformat(string str) {
-                return isEmpty(str) ? "" : "【" + str + "】" + "\n";
-            }
-        }
+        private IPlugIn pipeServer;
 
         public MainWindow() {
             config = new Config(cfgFile);
@@ -366,22 +54,17 @@ namespace Gevjon {
             if (cur_ver.CompareTo(cfg_ver) == 1) {
                 // update from old version
                 config.set("dataVer", "0000");
-                config.set("version", AssemblyInfo.VERSION)
+                config.set("version", AssemblyInfo.VERSION);
             }
             db = new YGOdb(dbFile);
             Left = int.Parse(config.get("left"));
             Top = int.Parse(config.get("top"));
             InitializeComponent();
         }
-        public delegate void DelegateMessage(string Reply);
-
-        enum MODES {
-            exact, fuzzy, issued
-        }
-
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             InitBackground();
-            pipeServer = new PipeServer(this);
+            pipeServer = new PipeServer();
+            pipeServer.PluginMessageEvent += OnPluginMessage;
             Background.Opacity = float.Parse(config.get("alpha"));
             Width = int.Parse(config.get("width"));
             Height = int.Parse(config.get("height"));
@@ -407,9 +90,9 @@ namespace Gevjon {
                 CheckUpdate();
             }
             if ("1".Equals(config.get("pipeServer"))) { //重复start不影响
-                pipeServer.Start();
+                pipeServer.Load();
             } else {
-                pipeServer.Stop();
+                pipeServer.Unload();
             }
         }
         private void InitBackground() {
@@ -593,6 +276,60 @@ namespace Gevjon {
             this.Hide();
             form.Show();
             form.Focus();
+        }
+        private void OnPluginMessage(Object sender, EventArgs e) {
+
+            try {
+                Dictionary<string, object> json = JsonSerializer.Deserialize<Dictionary<string, object>>(((PluginMessageEventArgs)e).Message);
+                string mode = json["mode"].ToString();
+                if (Enum.IsDefined(typeof(MODES), mode)) {
+                    switch ((MODES)Enum.Parse(typeof(MODES), mode, true)) {
+                        case MODES.exact:
+                            ControlGrid.Dispatcher.Invoke(new Action(() => {
+                                if ("1".Equals(config.get("autoScroll"))) {
+                                    if ("⇲".Equals(ResizeButton.Content)) {
+                                        ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                    }
+                                }
+                                CardSearchBox.Text = json["data"].ToString();
+                                Find(true);
+                            }));
+                            break;
+                        case MODES.fuzzy:
+                            ControlGrid.Dispatcher.Invoke(new Action(() => {
+                                if ("1".Equals(config.get("autoScroll"))) {
+                                    if ("⇲".Equals(ResizeButton.Content)) {
+                                        ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                    }
+                                }
+                                CardSearchBox.Text = json["data"].ToString();
+                                Find(false);
+                            }));
+                            break;
+                        case MODES.issued:
+                            ControlGrid.Dispatcher.Invoke(new Action(() => {
+                                if ("1".Equals(config.get("autoScroll"))) {
+                                    if ("⇲".Equals(ResizeButton.Content)) {
+                                        ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                    }
+                                }
+                                string data = json["data"].ToString();
+                                Card card = JsonSerializer.Deserialize<Card>(data);
+                                List<Card> cards = new List<Card>() { };
+                                cards.Add(card);
+                                UpdateCardList(cards);
+                            }));
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    Console.WriteLine("Received unknown mode: {0}", mode);
+                }
+            }
+            catch (Exception ex) {
+                Console.WriteLine("ERROR: {0}", ex.Message);
+            }
         }
     }
 }

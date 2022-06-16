@@ -69,7 +69,7 @@
 可使用项目目录下PipeClient.py进行测试,请注意json需转义
 
 ```powershell
-.\PipeClient.py "{\"name\":\"107\",\"mode\":\"fuzzy\"}"
+.\PipeClient.py '{\"data\":\"107\",\"mode\":\"fuzzy\"}'
 ```
 
 #### 数据更新

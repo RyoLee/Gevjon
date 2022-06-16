@@ -24,7 +24,7 @@
 
 using System.Windows;
 
-namespace Gevjon {
+namespace Core {
     public partial class Setting : Window {
         private MainWindow mainWindow;
         public Setting(MainWindow window) {
@@ -74,7 +74,7 @@ namespace Gevjon {
         }
 
         private void AlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            this.Background.Opacity = AlphaSlider.Value/100;
+            this.Background.Opacity = AlphaSlider.Value / 100;
         }
     }
 }
