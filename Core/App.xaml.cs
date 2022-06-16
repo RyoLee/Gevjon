@@ -22,14 +22,53 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
+using System;
+using System.Diagnostics;
 using System.Windows;
+using log4net;
+using log4net.Appender;
+using log4net.Config;
+using log4net.Core;
+using log4net.Layout;
+using log4net.Repository.Hierarchy;
 
-namespace Core {
+namespace Gevjon {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application {
-        public App() {
+        public static void InitLogger() {
+            Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
+            hierarchy.Root.RemoveAllAppenders();
+            hierarchy.Root.Level = Level.All;
+            var patternLayout = new PatternLayout {
+                ConversionPattern = "%date [%thread] %level %logger - %message%newline"
+            };
+            patternLayout.ActivateOptions();
+
+            var roller = new RollingFileAppender {
+                File = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName)+"\\log.txt",
+                AppendToFile = true,
+                ImmediateFlush=true,
+                RollingStyle = RollingFileAppender.RollingMode.Size,
+                Encoding = System.Text.Encoding.UTF8,
+                MaxSizeRollBackups = 3,
+                MaximumFileSize = "1MB",
+                StaticLogFileName = true,
+                Layout = patternLayout,
+                LockingModel = new FileAppender.MinimalLock(),
+            };
+            roller.ActivateOptions();
+            hierarchy.Root.AddAppender(roller);
+            BasicConfigurator.Configure(hierarchy);
+        }
+        static App() {
+            InitLogger();
+        }
+        private void Application_Startup(object sender, StartupEventArgs e) {
+            Application currApp = Current;
+            currApp.StartupUri = new Uri("MainWindow.xaml", UriKind.RelativeOrAbsolute);
         }
     }
+
 }

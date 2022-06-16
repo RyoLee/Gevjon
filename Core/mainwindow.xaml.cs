@@ -22,9 +22,13 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
-using PlugIn;
+using Gevjon.Common;
+using Gevjon.PlugIn;
+using log4net;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
@@ -32,23 +36,72 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Core {
+namespace Gevjon.Core {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-
-    enum MODES {
-        exact, fuzzy, issued
-    }
     public partial class MainWindow : Window {
+        static ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         static string dbFile = "cards.json";
         static string cfgFile = "config.json";
         private YGOdb db;
         public Config config;
-        private IPlugIn pipeServer;
+        private Dictionary<string, IPlugIn> plugIns;
+        [ImportMany(typeof(IPlugIn))]
+        private IEnumerable<IPlugIn> Plugins { get; set; }
+        PlugInEventManager plugInEventManager;
+        void LoadPlugins() {
+            try {
+                var dir = new DirectoryInfo(".\\Plugins");
+                if (dir.Exists) {
+                    var catalog = new AggregateCatalog();
+                    catalog.Catalogs.Add(new DirectoryCatalog(".\\Plugins\\"));
+                    using (CompositionContainer container = new CompositionContainer(catalog)) {
+                        try {
+                            container.ComposeParts(this);
+                        }
+                        catch (Exception ex) {
+                            logger.Warn("加载插件异常:{}", ex);
+                        }
+                        foreach (var plugin in Plugins) {
+                            plugIns.Add(plugin.Id.ToString(), plugin);
+                            plugin.Config = new Config(".\\Plugins\\" + plugin.Name + ".json", plugin.DefaultConfig);
+                            plugin.PluginMessageEvent += OnPluginMessage;
+                            plugin.Load();
+                            logger.InfoFormat("loaded plugin:{0}", plugin.Name);
+                        }
+                    }
 
-        public MainWindow() {
-            config = new Config(cfgFile);
+                }
+
+            }
+            catch (Exception ex) {
+                logger.Warn("加载插件异常:{}", ex);
+            }
+        }
+        private void InitConfig() {
+            var defaultCfg = new {
+                version = "1.0.0",
+                autoUpdate = "1",
+                alpha = "0.5",
+                left = "0",
+                top = "0",
+                width = "380",
+                height = "400",
+                title = "masterduel",
+                onTop = "1",
+                pipeServer = "1",
+                lightMode = "0",
+                currentFontName = "Microsoft YaHei UI",
+                currentFontSize = "16",
+                verURL = "https://ghproxy.com/https://raw.githubusercontent.com/RyoLee/Gevjon/gh-pages/version.txt",
+                dlURL = "https://github.com/RyoLee/Gevjon/releases/latest",
+                dataVerURL = "https://ygocdb.com/api/v0/cards.zip.md5",
+                dataDlURL = "https://ygocdb.com/api/v0/cards.zip",
+                dataVer = "0000",
+                autoScroll = "1"
+            };
+            config = new Config(cfgFile, defaultCfg);
             var cfg_ver = new Version(config.get("version"));
             var cur_ver = new Version(AssemblyInfo.VERSION);
             if (cur_ver.CompareTo(cfg_ver) == 1) {
@@ -56,15 +109,19 @@ namespace Core {
                 config.set("dataVer", "0000");
                 config.set("version", AssemblyInfo.VERSION);
             }
+        }
+        public MainWindow() {
             db = new YGOdb(dbFile);
+            plugIns = new Dictionary<string, IPlugIn>();
+            InitConfig();
+            LoadPlugins();
+            plugInEventManager = new PlugInEventManager(this);
             Left = int.Parse(config.get("left"));
             Top = int.Parse(config.get("top"));
             InitializeComponent();
         }
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             InitBackground();
-            pipeServer = new PipeServer();
-            pipeServer.PluginMessageEvent += OnPluginMessage;
             Background.Opacity = float.Parse(config.get("alpha"));
             Width = int.Parse(config.get("width"));
             Height = int.Parse(config.get("height"));
@@ -89,11 +146,8 @@ namespace Core {
             if ("1".Equals(config.get("autoUpdate"))) {
                 CheckUpdate();
             }
-            if ("1".Equals(config.get("pipeServer"))) { //重复start不影响
-                pipeServer.Load();
-            } else {
-                pipeServer.Unload();
-            }
+            // TODO: load plugins
+
         }
         private void InitBackground() {
             Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 255, 255));
@@ -107,7 +161,7 @@ namespace Core {
             CardDescBox.Background = Background;
         }
 
-        private void Find(bool exact) {
+        public void Find(bool exact) {
             CardComboBox.IsEnabled = false;
             CardComboBox.ItemsSource = null;
             CardComboBox.Items.Refresh();
@@ -128,7 +182,7 @@ namespace Core {
             e.Handled = true;
         }
 
-        private void UpdateCardList(List<Card> cards) {
+        public void UpdateCardList(List<Card> cards) {
             if (cards != null && cards.Count != 0) {
                 CardComboBox.IsEnabled = true;
                 CardComboBox.ItemsSource = cards;
@@ -280,55 +334,11 @@ namespace Core {
         private void OnPluginMessage(Object sender, EventArgs e) {
 
             try {
-                Dictionary<string, object> json = JsonSerializer.Deserialize<Dictionary<string, object>>(((PluginMessageEventArgs)e).Message);
-                string mode = json["mode"].ToString();
-                if (Enum.IsDefined(typeof(MODES), mode)) {
-                    switch ((MODES)Enum.Parse(typeof(MODES), mode, true)) {
-                        case MODES.exact:
-                            ControlGrid.Dispatcher.Invoke(new Action(() => {
-                                if ("1".Equals(config.get("autoScroll"))) {
-                                    if ("⇲".Equals(ResizeButton.Content)) {
-                                        ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                                    }
-                                }
-                                CardSearchBox.Text = json["data"].ToString();
-                                Find(true);
-                            }));
-                            break;
-                        case MODES.fuzzy:
-                            ControlGrid.Dispatcher.Invoke(new Action(() => {
-                                if ("1".Equals(config.get("autoScroll"))) {
-                                    if ("⇲".Equals(ResizeButton.Content)) {
-                                        ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                                    }
-                                }
-                                CardSearchBox.Text = json["data"].ToString();
-                                Find(false);
-                            }));
-                            break;
-                        case MODES.issued:
-                            ControlGrid.Dispatcher.Invoke(new Action(() => {
-                                if ("1".Equals(config.get("autoScroll"))) {
-                                    if ("⇲".Equals(ResizeButton.Content)) {
-                                        ResizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                                    }
-                                }
-                                string data = json["data"].ToString();
-                                Card card = JsonSerializer.Deserialize<Card>(data);
-                                List<Card> cards = new List<Card>() { };
-                                cards.Add(card);
-                                UpdateCardList(cards);
-                            }));
-                            break;
-                        default:
-                            break;
-                    }
-                } else {
-                    Console.WriteLine("Received unknown mode: {0}", mode);
-                }
+                PluginMessageEventArgs args = (PluginMessageEventArgs)e;
+                plugInEventManager.PostEvent(sender,args);
             }
             catch (Exception ex) {
-                Console.WriteLine("ERROR: {0}", ex.Message);
+                logger.ErrorFormat("ERROR: {0}", ex.Message);
             }
         }
     }

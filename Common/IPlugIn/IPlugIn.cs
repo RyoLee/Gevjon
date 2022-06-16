@@ -1,8 +1,15 @@
-using System;
+using Gevjon.Common;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
-namespace PlugIn {
+namespace Gevjon.PlugIn {
+    public enum PlugInEventType {
+        SEARCH, LOG
+    }
     public interface IPlugIn {
+        // 初始化配置
+        Config Config { set; }
+        object DefaultConfig { get; }
         // 加载插件
         [MethodImpl(MethodImplOptions.Synchronized)]
         void Load();
@@ -17,16 +24,17 @@ namespace PlugIn {
         Guid Id { get; }
         // 描述信息
         string Description { get; }
-        // 是否可配置
-        bool IsConfigurable();
         // 仅当可配置时需要实现,用于呼出配置页
-        void ShowSettingPanel();
+        Window SettingPanel { get; }
         // 插件通信
         event EventHandler PluginMessageEvent;
 
 
     }
     public class PluginMessageEventArgs : EventArgs {
-        public string Message { get; set; }
+        public PlugInEventType EventType {
+            get; set;
+        }
+        public Dictionary<string,object>? Datas { get; set; }
     }
 }

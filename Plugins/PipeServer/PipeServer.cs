@@ -1,8 +1,16 @@
+using Gevjon.Common;
+using Gevjon.PlugIn;
+using System.ComponentModel.Composition;
+using System.IO;
 using System.IO.Pipes;
+using System.Text.Json;
+using System.Windows;
 
-namespace PlugIn {
+namespace Gevjon.PipeServer {
+    [Export(typeof(IPlugIn))]
     public class PipeServer : IPlugIn {
         private event EventHandler handler;
+        private Config config;
         private bool stopFlag = true;
         public string Name => "PipeServer";
 
@@ -20,22 +28,25 @@ namespace PlugIn {
 
         public string Description => "命名管道服务";
 
+        public Config Config { set => config = value; }
+
+        public object DefaultConfig => new { interval = "1000" };
+
+        public Window? SettingPanel => new SettingPanel(config);
+
         event EventHandler IPlugIn.PluginMessageEvent {
             add {
-                handler+=value ;
+                handler += value;
             }
 
             remove {
-                handler -= value ;
+                handler -= value;
             }
         }
 
         private void StartPipeServer() {
             using (NamedPipeServerStream pipeServer = new NamedPipeServerStream("GevjonCore", PipeDirection.InOut)) {
-                Console.WriteLine("NamedPipeServer Start.");
-                Console.Write("Waiting for client connection...");
                 pipeServer.WaitForConnection();
-                Console.WriteLine("Client connected.");
                 try {
                     using (StreamReader sr = new StreamReader(pipeServer)) {
                         string temp = "";
@@ -43,23 +54,24 @@ namespace PlugIn {
                         while ((line = sr.ReadLine()) != null) {
                             temp += line;
                         }
-                        Console.WriteLine("Received from client: {0}", temp);
-                        SendMessage(temp);
+                        Dictionary<string, object> message = new Dictionary<string, object>();
+                        PluginMessageEventArgs args = new PluginMessageEventArgs { EventType = PlugInEventType.SEARCH, Datas = new Dictionary<string, object> { { "data", temp } } };
+                        SendMessage(args);
                     }
                 }
                 catch (IOException e) {
-                    Console.WriteLine("ERROR: {0}", e.Message);
+                    PluginMessageEventArgs args = new PluginMessageEventArgs { EventType = PlugInEventType.LOG, Datas = new Dictionary<string, object> { { "log", e }, { "level", "Info" } } };
+                    SendMessage(args);
                 }
             }
         }
-
         public void Load() {
             if (stopFlag) {
                 stopFlag = false;
                 Task.Run(() => {
                     while (true) {
                         if (stopFlag) {
-                            System.Threading.Thread.Sleep(1000);
+                            Thread.Sleep(int.Parse(config.get("interval", "1000")));
                         } else {
                             StartPipeServer();
                         }
@@ -71,16 +83,8 @@ namespace PlugIn {
         public void Unload() {
             stopFlag = true;
         }
-
-        public bool IsConfigurable() {
-            return false;
-        }
-
-        public void ShowSettingPanel() {
-            throw new NotImplementedException();
-        }
-        protected virtual void SendMessage(string message) {
-            handler?.Invoke(this, new PluginMessageEventArgs() { Message = message });
+        protected virtual void SendMessage(PluginMessageEventArgs args) {
+            handler?.Invoke(this, args);
         }
     }
 

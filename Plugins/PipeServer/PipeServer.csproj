@@ -1,14 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\IPlugIn\IPlugIn.csproj" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
   </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\Config\Config.csproj">
+      <ExcludeAssets>true</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Common\IPlugIn\IPlugIn.csproj">
+      <ExcludeAssets>true</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;$(TargetDir)&quot; &quot;$(SolutionDir)Plugins\pack\&quot; /Y" />
+  </Target>
 </Project>

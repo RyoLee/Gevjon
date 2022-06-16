@@ -2,10 +2,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace Core {
+namespace Gevjon.Common {
     public class Config {
         private string path;
         private volatile Dictionary<string, string> datas;
+        public string get(string k, string d) {
+            if (datas.ContainsKey(k)) {
+                return datas[k];
+            } else {
+                set(k, d);
+                return d;
+            }
+        }
         public string get(string k) {
             load();
             return datas[k];
@@ -14,9 +22,14 @@ namespace Core {
             datas[k] = v;
             save();
         }
-        public Config(string path) {
+        public Config(string path, object defaultCfg) {
             this.path = path;
-            this.datas = init();
+            this.datas = new Dictionary<string, string>();
+            if (defaultCfg != null) {
+                foreach (var prop in defaultCfg.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) {
+                    datas[prop.Name] = prop.GetValue(defaultCfg, null).ToString();
+                }
+            }
             load();
             save();
         }
@@ -30,34 +43,6 @@ namespace Core {
                     }
                 }
             }
-        }
-        private Dictionary<string, string> init() {
-            Dictionary<string, string> res = new Dictionary<string, string>();
-            var defaultCfg = new {
-                version = "1.0.0",
-                autoUpdate = "1",
-                alpha = "0.5",
-                left = "0",
-                top = "0",
-                width = "380",
-                height = "400",
-                title = "masterduel",
-                onTop = "1",
-                pipeServer = "1",
-                lightMode = "0",
-                currentFontName = "Microsoft YaHei UI",
-                currentFontSize = "16",
-                verURL = "https://ghproxy.com/https://raw.githubusercontent.com/RyoLee/Gevjon/gh-pages/version.txt",
-                dlURL = "https://github.com/RyoLee/Gevjon/releases/latest",
-                dataVerURL = "https://ygocdb.com/api/v0/cards.zip.md5",
-                dataDlURL = "https://ygocdb.com/api/v0/cards.zip",
-                dataVer = "0000",
-                autoScroll = "1"
-            };
-            foreach (var prop in defaultCfg.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) {
-                res[prop.Name] = prop.GetValue(defaultCfg, null).ToString();
-            }
-            return res;
         }
         private void save() {
             string jsonStr = FormatOutput(JsonSerializer.Serialize(datas));

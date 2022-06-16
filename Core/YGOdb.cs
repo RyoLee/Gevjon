@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace Core {
+namespace Gevjon.Core {
     public class Text {
         public string types { get; set; }
         public string pdesc { get; set; }
@@ -42,6 +42,9 @@ namespace Core {
         }
     }
     public class YGOdb {
+        public enum SEARCH_MODES {
+            exact, fuzzy, issued
+        }
 
         string path;
 

@@ -26,14 +26,21 @@ jobs:
     - name: Build
       run: |
         Remove-Item public -Recurse -ErrorAction Ignore
-        mkdir public
-        msbuild /t:Restore /p:Configuration=Release
-        msbuild /m /p:Configuration=Release /p:DebugSymbols=false /p:DebugType=None
-        cp ./README.md ./Core/bin/Release/net6.0-windows/
-        cd ./Core/bin/Release/net6.0-windows
-        (get-item Gevjon.exe).VersionInfo.ProductVersion > ../../../public/version.txt
+        Remove-Item pack -Recurse -ErrorAction Ignore
+        mkdir -p public
+        mkdir -p pack/Plugins
+        dotnet.exe publish /p:Configuration=Release /p:DebugSymbols=false /p:DebugType=None -o public
+        cp ./public/cards.json ./pack
+        cp ./public/Gevjon.exe ./pack
+        cp ./public/README.md ./pack
+        cp ./public/PipeServer.dll ./pack/Plugins
+        Remove-Item public -Recurse -ErrorAction Ignore
+        mkdir -p public
+        cd ./pack
+        (get-item Gevjon.exe).VersionInfo.ProductVersion > ../public/version.txt
         7z a Gevjon.7z *
-        mv ./Gevjon.7z ../../../public/
+        mv ./Gevjon.7z ../public/
+        cd ..
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2

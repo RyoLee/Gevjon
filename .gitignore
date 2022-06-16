@@ -7,3 +7,6 @@ bin
 .vs
 .nuget
 *.csproj.user
+.vscode
+pack
+public

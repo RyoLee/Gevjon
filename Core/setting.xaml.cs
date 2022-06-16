@@ -24,7 +24,7 @@
 
 using System.Windows;
 
-namespace Core {
+namespace Gevjon.Core {
     public partial class Setting : Window {
         private MainWindow mainWindow;
         public Setting(MainWindow window) {
